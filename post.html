@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es-419">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" id="meta-description" content="Artículo de salud mental - Umana">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Umana - Salud Mental">
+    <meta property="og:url" id="og-url" content="https://umana-salud-mental.github.io/post.html">
+    <meta property="og:title" id="og-title" content="Artículo | Umana">
+    <meta property="og:description" id="og-description" content="Artículo de salud mental - Umana">
+    <meta property="og:image" id="og-image" content="https://umana-salud-mental.github.io/assets/images/logo.png">
+    <title id="page-title">Artículo | Umana - Salud Mental</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .post-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+        .post-breadcrumb {
+            font-size: 0.875rem;
+            color: #6B7280;
+            margin-bottom: 1.5rem;
+        }
+        .post-breadcrumb a {
+            color: #5D8064;
+            text-decoration: none;
+        }
+        .post-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        .post-category-badge {
+            display: inline-block;
+            background: #5D8064;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            margin-bottom: 1rem;
+        }
+        .post-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1F2937;
+            line-height: 1.25;
+            margin-bottom: 1rem;
+        }
+        .post-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: #6B7280;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .post-hero-image {
+            width: 100%;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            object-fit: cover;
+            max-height: 450px;
+        }
+        .post-body {
+            font-size: 1.0625rem;
+            line-height: 1.8;
+            color: #374151;
+        }
+        .post-body h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1F2937;
+            margin: 2rem 0 0.75rem;
+        }
+        .post-body h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+            margin: 1.5rem 0 0.5rem;
+        }
+        .post-body p {
+            margin-bottom: 1.25rem;
+        }
+        .post-body ul,
+        .post-body ol {
+            margin-bottom: 1.25rem;
+            padding-left: 1.5rem;
+        }
+        .post-body li {
+            margin-bottom: 0.5rem;
+        }
+        .post-cta {
+            background: #F0F5F1;
+            border-left: 4px solid #5D8064;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-top: 3rem;
+        }
+        .post-cta h3 {
+            color: #5D8064;
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+        .post-cta p {
+            color: #4B5563;
+            margin-bottom: 1rem;
+        }
+        .post-cta .cta-button {
+            display: inline-block;
+            background: #5D8064;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .post-cta .cta-button:hover {
+            background: #4a6850;
+        }
+        .post-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #5D8064;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 2rem;
+        }
+        .post-back-link:hover {
+            text-decoration: underline;
+        }
+        .post-not-found {
+            text-align: center;
+            padding: 4rem 1.5rem;
+        }
+        .post-not-found h2 {
+            font-size: 1.5rem;
+            color: #1F2937;
+            margin-bottom: 1rem;
+        }
+        .post-not-found p {
+            color: #6B7280;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 640px) {
+            .post-title {
+                font-size: 1.625rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="container">
+                <div class="logo">
+                    <img src="assets/images/logo-placeholder.svg" alt="Umana - Plataforma de Salud Mental" class="logo-img">
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="index.html#quienes-somos">Quiénes Somos</a></li>
+                    <li><a href="index.html#servicios">Servicios</a></li>
+                    <li><a href="recursos.html">Recursos</a></li>
+                    <li><a href="index.html#contacto">Contacto</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="post-container" id="post-container">
+            <div id="post-loading" style="text-align:center;padding:4rem 0;">
+                <p style="color:#6B7280;">Cargando artículo...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>&copy; 2026 Umana - Plataforma de Salud Mental. Todos los derechos reservados.</p>
+                    <p class="privacy">Tu información es confidencial y está protegida.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var postId = params.get('id');
+
+            if (!postId) {
+                renderNotFound();
+                return;
+            }
+
+            fetch('posts.json')
+                .then(function (res) {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(function (posts) {
+                    var post = posts.find(function (p) { return p.id === postId; });
+                    if (post) {
+                        renderPost(post);
+                    } else {
+                        renderNotFound();
+                    }
+                })
+                .catch(function () {
+                    renderNotFound();
+                });
+
+            function renderPost(post) {
+                // Update page meta for SEO
+                document.title = post.title + ' | Umana - Salud Mental';
+                document.getElementById('page-title').textContent = post.title + ' | Umana - Salud Mental';
+                document.getElementById('meta-description').setAttribute('content', post.summary);
+                document.getElementById('og-title').setAttribute('content', post.title + ' | Umana');
+                document.getElementById('og-description').setAttribute('content', post.summary);
+                document.getElementById('og-image').setAttribute('content', post.image);
+                document.getElementById('og-url').setAttribute('content', window.location.href);
+
+                var container = document.getElementById('post-container');
+                var formattedDate = formatDate(post.date);
+
+                container.innerHTML = [
+                    '<div class="post-breadcrumb">',
+                    '  <a href="index.html">Inicio</a> / ',
+                    '  <a href="recursos.html">Recursos</a> / ',
+                    '  <span>' + escapeHtml(post.title) + '</span>',
+                    '</div>',
+                    '<span class="post-category-badge">' + escapeHtml(post.categoryLabel) + '</span>',
+                    '<h1 class="post-title">' + escapeHtml(post.title) + '</h1>',
+                    '<div class="post-meta">',
+                    '  <span>📅 ' + formattedDate + '</span>',
+                    '  <span>⏱ ' + escapeHtml(post.readTime) + '</span>',
+                    '</div>',
+                    '<img class="post-hero-image" src="' + escapeHtml(post.image) + '" alt="' + escapeHtml(post.imageAlt) + '">',
+                    '<div class="post-body">' + post.content + '</div>',
+                    '<div class="post-cta">',
+                    '  <h3>¿Necesitas apoyo profesional?</h3>',
+                    '  <p>Nuestros terapeutas certificados están listos para acompañarte en tu camino hacia el bienestar. Sesiones 100% online, confidenciales y personalizadas.</p>',
+                    '  <a href="index.html#contacto" class="cta-button">Agenda tu consulta</a>',
+                    '</div>',
+                    '<a href="recursos.html" class="post-back-link">← Volver a Recursos</a>'
+                ].join('\n');
+            }
+
+            function renderNotFound() {
+                var container = document.getElementById('post-container');
+                container.innerHTML = [
+                    '<div class="post-not-found">',
+                    '  <h2>Artículo no encontrado</h2>',
+                    '  <p>El artículo que buscas no existe o ha sido eliminado.</p>',
+                    '  <a href="recursos.html" class="cta-button" style="display:inline-block;background:#5D8064;color:#fff;padding:.75rem 1.5rem;border-radius:.5rem;text-decoration:none;font-weight:600;">Ver todos los recursos</a>',
+                    '</div>'
+                ].join('\n');
+            }
+
+            function escapeHtml(str) {
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
+            }
+
+            function formatDate(dateStr) {
+                try {
+                    var d = new Date(dateStr + 'T12:00:00');
+                    return d.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+                } catch (e) {
+                    return dateStr;
+                }
+            }
+        }());
+    </script>
+</body>
+</html>
