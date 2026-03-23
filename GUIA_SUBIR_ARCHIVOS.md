@@ -4,21 +4,54 @@ Esta guía te explica **paso a paso** cómo poner los archivos necesarios en tu 
 
 ---
 
-## 🗂️ Archivos que necesitas subir
+## ⚡ Opción C: Deploy automático (3 pasos — recomendado)
 
-Estos son los 5 archivos que debes agregar/reemplazar en tu repositorio:
+Si ya eres colaborador en `Umana-Salud-Mental/umana-salud-mental.github.io`, puedes usar este método automático. Solo necesitas hacer 3 pasos y el sistema sube los archivos por ti.
 
-| Archivo | Acción | Enlace de descarga |
-|---------|--------|--------------------|
-| `post.html` | ✅ Nuevo (créalo) | [⬇️ Descargar post.html](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/post.html) |
-| `posts.json` | ✅ Nuevo (créalo) | [⬇️ Descargar posts.json](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/posts.json) |
-| `robots.txt` | ✅ Nuevo (créalo) | [⬇️ Descargar robots.txt](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/robots.txt) |
-| `sitemap.xml` | ✅ Nuevo (créalo) | [⬇️ Descargar sitemap.xml](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/sitemap.xml) |
-| `recursos.html` | 🔄 Reemplazar el existente | [⬇️ Descargar recursos.html](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/recursos.html) |
+### Paso 1 — Crear un token de acceso personal (PAT)
+
+1. Inicia sesión en GitHub con la cuenta **`Umana-Salud-Mental`** (la dueña del sitio web)
+2. Ve a 👉 **https://github.com/settings/tokens/new**
+3. En el campo **"Note"** escribe: `Deploy Umana`
+4. En **"Expiration"** selecciona: `7 days` (o más si quieres)
+5. En la sección **"Select scopes"**, marca la casilla **`repo`** (la primera de la lista)
+6. Desplázate hasta abajo y haz clic en el botón verde **"Generate token"**
+7. **IMPORTANTE**: Copia el token que aparece (empieza con `ghp_...`). Solo se muestra una vez.
+
+### Paso 2 — Agregar el token como secreto
+
+1. Inicia sesión con la cuenta **`alexkkhg19m-dotcom`**
+2. Ve a 👉 **https://github.com/alexkkhg19m-dotcom/Umana/settings/secrets/actions/new**
+3. En **"Name"** escribe exactamente: `LIVE_SITE_PAT`
+4. En **"Secret"** pega el token que copiaste en el Paso 1
+5. Haz clic en **"Add secret"**
+
+### Paso 3 — Ejecutar el deploy automático
+
+1. Ve a 👉 **https://github.com/alexkkhg19m-dotcom/Umana/actions/workflows/deploy-live.yml**
+2. Haz clic en el botón **"Run workflow"** (lado derecho)
+3. Deja el campo como está (`si`) y haz clic en el botón verde **"Run workflow"**
+4. Espera ~30 segundos. ¡Listo! Los 5 archivos estarán en tu sitio automáticamente.
+
+> ✅ **Después del deploy**, ve a https://umana-salud-mental.github.io/post.html?id=mn3lqa3fk2gvdsqxajo para confirmar que funciona. Luego ve a Google Search Console → Inspección de URL → pega esa URL → **"Solicitar indexación"**.
 
 ---
 
-## 🔑 Opción A: Dar acceso a tu otra cuenta (recomendado)
+## 🗂️ Archivos que se suben
+
+Estos son los 5 archivos que el deploy automático (Opción C) sube a tu repositorio:
+
+| Archivo | Acción |
+|---------|--------|
+| `post.html` | ✅ Nuevo — plantilla para artículos del blog |
+| `posts.json` | ✅ Nuevo — datos de los 12 artículos |
+| `robots.txt` | ✅ Nuevo — permite que Google indexe el sitio |
+| `sitemap.xml` | ✅ Nuevo — mapa del sitio para SEO |
+| `recursos.html` | 🔄 Reemplazado — con enlaces funcionales a los artículos |
+
+---
+
+## 🔑 Opción A: Dar acceso a tu otra cuenta ✅ (ya completado)
 
 Esta opción es la más práctica a largo plazo porque te permitirá hacer cambios desde cualquiera de tus dos cuentas.
 

@@ -1,0 +1,48 @@
+name: 🚀 Deploy to Live Site
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "si" to confirm deploy to umana-salud-mental.github.io'
+        required: true
+        default: 'si'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fix branch (files to deploy)
+        uses: actions/checkout@v4
+        with:
+          ref: copilot/fix-noindex-tag-issue
+
+      - name: Clone live site repo
+        run: |
+          git clone https://x-access-token:${{ secrets.LIVE_SITE_PAT }}@github.com/Umana-Salud-Mental/umana-salud-mental.github.io.git live-site
+
+      - name: Copy fixed files into live site
+        run: |
+          cp post.html     live-site/post.html
+          cp posts.json    live-site/posts.json
+          cp robots.txt    live-site/robots.txt
+          cp sitemap.xml   live-site/sitemap.xml
+          cp recursos.html live-site/recursos.html
+
+      - name: Commit and push to live site
+        working-directory: live-site
+        run: |
+          git config user.email "noreply@github.com"
+          git config user.name "Umana Deploy Bot"
+          git add post.html posts.json robots.txt sitemap.xml recursos.html
+          git diff --cached --quiet && echo "Nothing to commit" && exit 0
+          git commit -m "Fix Google Search Console noindex: add post.html, posts.json, robots.txt, sitemap.xml; update recursos.html"
+          git push
+
+      - name: ✅ Done
+        run: |
+          echo "Deploy completo! Los archivos ya están en el sitio web en vivo."
+          echo "Visita https://umana-salud-mental.github.io para verificar."
