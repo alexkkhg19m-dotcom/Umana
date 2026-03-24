@@ -36,6 +36,9 @@ jobs:
           cp robots.txt     live-site/robots.txt
           cp sitemap.xml    live-site/sitemap.xml
           cp recursos.html  live-site/recursos.html
+          # Admin panel
+          mkdir -p live-site/edit
+          cp edit/index.html live-site/edit/index.html
           # Copiar workflow de auto-actualización y script de sitemap
           mkdir -p live-site/.github/workflows
           cp .github/workflows/sitemap-auto-update.yml live-site/.github/workflows/sitemap-auto-update.yml

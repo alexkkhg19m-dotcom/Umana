@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin | Umana Blog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #F0F4F1; color: #1F2937; min-height: 100vh; }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: #5D8064; color: #fff; padding: 0 1.5rem;
+      height: 56px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+    .topbar-brand { font-weight: 700; font-size: 1.1rem; letter-spacing: -.01em; }
+    .topbar-brand span { opacity: .65; font-weight: 400; font-size: .85rem; margin-left: .4rem; }
+    .topbar-actions { display: flex; gap: .6rem; align-items: center; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .45rem 1rem; border-radius: 8px; border: none;
+      font-family: inherit; font-size: .875rem; font-weight: 600;
+      cursor: pointer; transition: background .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: #5D8064; color: #fff; }
+    .btn-primary:hover { background: #4a6851; }
+    .btn-outline { background: transparent; color: #5D8064; border: 1.5px solid #5D8064; }
+    .btn-outline:hover { background: #edf3ee; }
+    .btn-ghost { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.5); }
+    .btn-ghost:hover { background: rgba(255,255,255,.1); }
+    .btn-danger { background: #DC2626; color: #fff; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-sm { padding: .3rem .7rem; font-size: .8rem; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── Page wrappers ── */
+    .page { display: none; }
+    .page.active { display: block; }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* ── Setup screen ── */
+    .setup-card {
+      max-width: 520px; margin: 3rem auto; background: #fff;
+      border-radius: 16px; padding: 2.5rem; box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    }
+    .setup-logo { font-size: 2.5rem; margin-bottom: 1rem; }
+    .setup-card h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: .4rem; }
+    .setup-card p { color: #6B7280; margin-bottom: 1.5rem; font-size: .9rem; line-height: 1.6; }
+    .setup-steps { background: #F0F4F1; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+    .setup-steps ol { padding-left: 1.2rem; }
+    .setup-steps li { font-size: .85rem; color: #374151; margin-bottom: .35rem; line-height: 1.5; }
+    .setup-steps a { color: #5D8064; font-weight: 600; }
+    .setup-steps code { background: #e5e7eb; border-radius: 4px; padding: 1px 5px; font-size: .82rem; }
+
+    /* ── Form elements ── */
+    .field { margin-bottom: 1.25rem; }
+    label { display: block; font-size: .85rem; font-weight: 600; color: #374151; margin-bottom: .4rem; }
+    label .req { color: #DC2626; }
+    input[type=text], input[type=url], input[type=date], input[type=number], select, textarea {
+      width: 100%; border: 1.5px solid #D1D5DB; border-radius: 8px;
+      padding: .6rem .85rem; font-family: inherit; font-size: .9rem; color: #1F2937;
+      transition: border-color .15s, box-shadow .15s; background: #fff; outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #5D8064; box-shadow: 0 0 0 3px rgba(93,128,100,.15);
+    }
+    textarea { resize: vertical; }
+    .hint { font-size: .78rem; color: #9CA3AF; margin-top: .3rem; }
+    .token-field { position: relative; }
+    .token-toggle {
+      position: absolute; right: .7rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: #9CA3AF; font-size: .85rem;
+    }
+    .token-toggle:hover { color: #5D8064; }
+
+    /* ── Dashboard ── */
+    .dash-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: .75rem;
+    }
+    .dash-header h2 { font-size: 1.35rem; font-weight: 700; }
+    .post-count { color: #6B7280; font-size: .875rem; font-weight: 400; margin-left: .5rem; }
+
+    .post-list { display: flex; flex-direction: column; gap: .75rem; }
+    .post-card {
+      background: #fff; border-radius: 12px; padding: 1.1rem 1.25rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06); display: flex;
+      align-items: center; gap: 1rem; flex-wrap: wrap;
+    }
+    .post-card-info { flex: 1; min-width: 200px; }
+    .post-card-title { font-weight: 600; font-size: .95rem; margin-bottom: .25rem; }
+    .post-card-meta { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+    .badge {
+      display: inline-block; font-size: .72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .04em; padding: .15rem .55rem; border-radius: 999px;
+    }
+    .badge-cat { background: #d1fae5; color: #065f46; }
+    .badge-featured { background: #fef3c7; color: #92400e; }
+    .post-card-date { font-size: .8rem; color: #9CA3AF; }
+    .post-card-actions { display: flex; gap: .5rem; flex-shrink: 0; }
+
+    /* ── Editor ── */
+    .editor-header {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1.75rem; flex-wrap: wrap;
+    }
+    .editor-header h2 { font-size: 1.35rem; font-weight: 700; flex: 1; }
+
+    .card { background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 6px rgba(0,0,0,.07); margin-bottom: 1.25rem; }
+    .card-title { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #9CA3AF; margin-bottom: 1rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ── Rich text toolbar ── */
+    .rte-toolbar {
+      display: flex; flex-wrap: wrap; gap: .3rem; padding: .5rem .6rem;
+      border: 1.5px solid #D1D5DB; border-bottom: none;
+      border-radius: 8px 8px 0 0; background: #F9FAFB;
+    }
+    .rte-toolbar button {
+      padding: .25rem .55rem; border: 1px solid #D1D5DB; border-radius: 5px;
+      background: #fff; font-size: .8rem; font-weight: 600; cursor: pointer;
+      font-family: inherit; color: #374151; transition: background .1s;
+    }
+    .rte-toolbar button:hover { background: #5D8064; color: #fff; border-color: #5D8064; }
+    .rte-toolbar .sep { width: 1px; background: #E5E7EB; margin: 2px 2px; }
+    .rte-editor {
+      min-height: 280px; border: 1.5px solid #D1D5DB; border-radius: 0 0 8px 8px;
+      padding: .85rem 1rem; font-family: inherit; font-size: .9rem; line-height: 1.7;
+      color: #1F2937; outline: none; overflow-y: auto;
+    }
+    .rte-editor:focus { border-color: #5D8064; box-shadow: 0 0 0 3px rgba(93,128,100,.15); }
+    .rte-editor h2 { font-size: 1.2rem; font-weight: 700; margin: 1rem 0 .4rem; }
+    .rte-editor h3 { font-size: 1rem; font-weight: 700; margin: .8rem 0 .3rem; }
+    .rte-editor p { margin-bottom: .75rem; }
+    .rte-editor ul, .rte-editor ol { padding-left: 1.4rem; margin-bottom: .75rem; }
+    .rte-editor li { margin-bottom: .3rem; }
+    .rte-editor a { color: #5D8064; }
+
+    /* ── Toggle (featured) ── */
+    .toggle-row { display: flex; align-items: center; gap: .75rem; }
+    .toggle {
+      position: relative; width: 44px; height: 24px;
+      display: inline-block; cursor: pointer;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0; background: #D1D5DB;
+      border-radius: 999px; transition: background .2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; width: 18px; height: 18px;
+      background: #fff; border-radius: 50%; left: 3px; top: 3px;
+      transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle input:checked + .toggle-slider { background: #5D8064; }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+    .toggle-label { font-size: .875rem; color: #374151; }
+
+    /* ── Status banner ── */
+    .status {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+      background: #1F2937; color: #fff; padding: .75rem 1.5rem; border-radius: 10px;
+      font-size: .9rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,.25);
+      z-index: 999; transition: opacity .3s; pointer-events: none; max-width: 420px;
+      text-align: center;
+    }
+    .status.success { background: #065f46; }
+    .status.error { background: #991b1b; }
+    .status.hidden { opacity: 0; }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200;
+      align-items: center; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 14px; padding: 2rem; max-width: 420px; width: 90%;
+      box-shadow: 0 10px 40px rgba(0,0,0,.2);
+    }
+    .modal h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .6rem; }
+    .modal p { color: #6B7280; font-size: .9rem; margin-bottom: 1.5rem; line-height: 1.5; }
+    .modal-actions { display: flex; gap: .75rem; justify-content: flex-end; }
+
+    /* ── Empty state ── */
+    .empty { text-align: center; padding: 3rem 1rem; color: #9CA3AF; }
+    .empty-icon { font-size: 3rem; margin-bottom: .75rem; }
+    .empty p { font-size: .95rem; }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      width: 20px; height: 20px; border: 2.5px solid rgba(255,255,255,.4);
+      border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Misc ── */
+    .id-preview { font-family: monospace; font-size: .82rem; color: #6B7280; margin-top: .3rem; }
+    .saving-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(255,255,255,.7);
+      z-index: 150; align-items: center; justify-content: center; flex-direction: column; gap: 1rem;
+    }
+    .saving-overlay.show { display: flex; }
+    .saving-overlay .big-spinner {
+      width: 48px; height: 48px; border: 4px solid #D1D5DB;
+      border-top-color: #5D8064; border-radius: 50%; animation: spin .8s linear infinite;
+    }
+    .saving-overlay p { font-weight: 600; color: #374151; }
+  </style>
+</head>
+<body>
+
+<!-- Top navigation bar -->
+<div class="topbar" id="topbar" style="display:none">
+  <div class="topbar-brand">🌿 Umana <span>Admin</span></div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost btn-sm" id="btn-visit-site" onclick="window.open('https://umana-salud-mental.github.io','_blank')">Ver sitio ↗</button>
+    <button class="btn btn-ghost btn-sm" id="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PANTALLA 1: Setup (primer uso)
+════════════════════════════════════════════════ -->
+<div class="page active" id="page-setup">
+  <div class="container">
+    <div class="setup-card">
+      <div class="setup-logo">🌿</div>
+      <h1>Admin de Umana Blog</h1>
+      <p>Para publicar artículos necesitas un <strong>token de acceso de GitHub</strong>. Se guarda solo en tu navegador y nunca se comparte con nadie.</p>
+
+      <div class="setup-steps">
+        <strong style="font-size:.85rem;color:#374151;">¿Cómo crear tu token?</strong>
+        <ol style="margin-top:.5rem;">
+          <li>Inicia sesión en GitHub con la cuenta <code>Umana-Salud-Mental</code></li>
+          <li>Ve a <a href="https://github.com/settings/tokens?type=beta" target="_blank">Settings → Developer Settings → Fine-grained tokens</a></li>
+          <li>Clic en <strong>"Generate new token"</strong></li>
+          <li>Nombre: <code>Umana Admin</code> | Expiración: <code>No expiration</code></li>
+          <li>Repository access: <strong>Only selected → umana-salud-mental.github.io</strong></li>
+          <li>Permissions → Contents: <strong>Read and write</strong></li>
+          <li>Clic en <strong>"Generate token"</strong> y copia el token (<code>github_pat_...</code>)</li>
+        </ol>
+      </div>
+
+      <div class="field">
+        <label for="token-input">Token de GitHub <span class="req">*</span></label>
+        <div class="token-field">
+          <input type="password" id="token-input" placeholder="github_pat_..." autocomplete="off">
+          <button class="token-toggle" onclick="toggleTokenVisibility()" id="toggle-vis-btn" title="Mostrar/ocultar token">👁</button>
+        </div>
+        <p class="hint">Se guarda solo en este navegador (localStorage). No se envía a ningún servidor.</p>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%" onclick="setupToken()">
+        Entrar al panel →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PANTALLA 2: Dashboard (lista de artículos)
+════════════════════════════════════════════════ -->
+<div class="page" id="page-dashboard">
+  <div class="container">
+    <div class="dash-header">
+      <div>
+        <h2>Artículos <span class="post-count" id="post-count-label"></span></h2>
+      </div>
+      <button class="btn btn-primary" onclick="openEditor(null)">
+        ＋ Nuevo artículo
+      </button>
+    </div>
+
+    <div id="post-list-wrap">
+      <div class="empty">
+        <div class="empty-icon">📄</div>
+        <p>Cargando artículos...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PANTALLA 3: Editor de artículo
+════════════════════════════════════════════════ -->
+<div class="page" id="page-editor">
+  <div class="container">
+    <div class="editor-header">
+      <button class="btn btn-outline btn-sm" onclick="showDashboard()">← Volver</button>
+      <h2 id="editor-title">Nuevo artículo</h2>
+      <button class="btn btn-primary" id="btn-save" onclick="savePost()">
+        💾 Publicar artículo
+      </button>
+    </div>
+
+    <!-- Basic info -->
+    <div class="card">
+      <div class="card-title">Información básica</div>
+
+      <div class="field">
+        <label for="f-title">Título del artículo <span class="req">*</span></label>
+        <input type="text" id="f-title" placeholder="Ej: Cómo manejar la ansiedad en el trabajo" oninput="onTitleChange()">
+        <div class="id-preview" id="id-preview"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="f-category">Categoría <span class="req">*</span></label>
+          <select id="f-category">
+            <option value="ansiedad">Ansiedad</option>
+            <option value="depresion">Depresión</option>
+            <option value="relaciones">Relaciones</option>
+            <option value="estres">Estrés</option>
+            <option value="autocuidado">Autocuidado</option>
+            <option value="familia">Familia</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-date">Fecha de publicación <span class="req">*</span></label>
+          <input type="date" id="f-date">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="f-readtime">Tiempo de lectura (minutos)</label>
+          <input type="number" id="f-readtime" min="1" max="60" placeholder="5">
+        </div>
+        <div class="field" style="display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem">
+          <label>Artículo destacado</label>
+          <div class="toggle-row">
+            <label class="toggle">
+              <input type="checkbox" id="f-featured">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">Mostrar en portada como destacado</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-summary">Resumen <span class="req">*</span></label>
+        <textarea id="f-summary" rows="2" placeholder="2-3 oraciones que describan el artículo. Aparece en la tarjeta del blog."></textarea>
+        <p class="hint">Este texto aparece en Google debajo del título del artículo.</p>
+      </div>
+    </div>
+
+    <!-- Image -->
+    <div class="card">
+      <div class="card-title">Imagen de portada</div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="f-image">URL de la imagen</label>
+          <input type="url" id="f-image" placeholder="https://images.unsplash.com/...">
+          <p class="hint">Usa <a href="https://unsplash.com" target="_blank" style="color:#5D8064">Unsplash</a> para imágenes gratuitas.</p>
+        </div>
+        <div class="field">
+          <label for="f-image-alt">Descripción de la imagen (alt)</label>
+          <input type="text" id="f-image-alt" placeholder="Ej: Persona practicando meditación">
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="card">
+      <div class="card-title">Contenido del artículo <span class="req">*</span></div>
+      <p class="hint" style="margin-bottom:.75rem;">Escribe el artículo aquí. Usa los botones de la barra para dar formato.</p>
+
+      <div class="rte-toolbar">
+        <button onclick="fmt('bold')" title="Negrita"><b>N</b></button>
+        <button onclick="fmt('italic')" title="Cursiva"><i>I</i></button>
+        <div class="sep"></div>
+        <button onclick="fmtBlock('h2')" title="Título H2">H2</button>
+        <button onclick="fmtBlock('h3')" title="Subtítulo H3">H3</button>
+        <button onclick="fmtBlock('p')" title="Párrafo normal">¶</button>
+        <div class="sep"></div>
+        <button onclick="fmt('insertUnorderedList')" title="Lista con puntos">• Lista</button>
+        <button onclick="fmt('insertOrderedList')" title="Lista numerada">1. Lista</button>
+        <div class="sep"></div>
+        <button onclick="insertLink()" title="Insertar enlace">🔗 Enlace</button>
+        <div class="sep"></div>
+        <button onclick="fmt('removeFormat')" title="Quitar formato">✕ Formato</button>
+      </div>
+      <div class="rte-editor" id="f-content" contenteditable="true" spellcheck="true"></div>
+    </div>
+
+    <!-- Save button (bottom) -->
+    <div style="display:flex;justify-content:flex-end;gap:.75rem;padding-bottom:2rem">
+      <button class="btn btn-outline" onclick="showDashboard()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePost()">💾 Publicar artículo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     Modals & overlays
+════════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="modal-delete">
+  <div class="modal">
+    <h3>¿Eliminar artículo?</h3>
+    <p id="modal-delete-msg">Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-danger" id="modal-confirm-btn">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="saving-overlay" id="saving-overlay">
+  <div class="big-spinner"></div>
+  <p id="saving-msg">Publicando artículo...</p>
+</div>
+
+<div class="status hidden" id="status-bar"></div>
+
+<!-- ═══════════════════════════════════════════════
+     JavaScript
+════════════════════════════════════════════════ -->
+<script>
+  // ── Config ──────────────────────────────────────
+  const REPO  = 'Umana-Salud-Mental/umana-salud-mental.github.io';
+  const FILE  = 'posts.json';
+  const API   = `https://api.github.com/repos/${REPO}/contents/${FILE}`;
+  const SITE  = 'https://umana-salud-mental.github.io';
+
+  const CATEGORY_LABELS = {
+    ansiedad:    'Ansiedad',
+    depresion:   'Depresión',
+    relaciones:  'Relaciones',
+    estres:      'Estrés',
+    autocuidado: 'Autocuidado',
+    familia:     'Familia',
+  };
+
+  // ── State ────────────────────────────────────────
+  let token     = null;
+  let posts     = [];
+  let fileSha   = null;  // current SHA of posts.json in GitHub
+  let editingId = null;  // null = new post, string = editing existing
+
+  // ── Init ─────────────────────────────────────────
+  (function init() {
+    const stored = localStorage.getItem('umana_admin_token');
+    if (stored) {
+      token = stored;
+      loadDashboard();
+    }
+  })();
+
+  // ── Token setup ──────────────────────────────────
+  function toggleTokenVisibility() {
+    const inp = document.getElementById('token-input');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  async function setupToken() {
+    const val = document.getElementById('token-input').value.trim();
+    if (!val) { showStatus('Pega tu token de GitHub primero.', 'error'); return; }
+    token = val;
+    localStorage.setItem('umana_admin_token', token);
+    await loadDashboard();
+  }
+
+  // ── Navigation ───────────────────────────────────
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const isSetup = id === 'page-setup';
+    document.getElementById('topbar').style.display = isSetup ? 'none' : 'flex';
+    window.scrollTo(0, 0);
+  }
+
+  function logout() {
+    localStorage.removeItem('umana_admin_token');
+    token = null;
+    posts = [];
+    fileSha = null;
+    document.getElementById('token-input').value = '';
+    showPage('page-setup');
+  }
+
+  // ── Load dashboard ───────────────────────────────
+  async function loadDashboard() {
+    showPage('page-dashboard');
+    document.getElementById('post-list-wrap').innerHTML = `
+      <div class="empty"><div class="empty-icon">⏳</div><p>Cargando artículos...</p></div>`;
+    try {
+      const data = await ghGet();
+      fileSha = data.sha;
+      posts   = JSON.parse(b64decode(data.content));
+      renderPostList();
+    } catch(e) {
+      let msg = e.message || 'Error desconocido';
+      if (msg.includes('401')) msg = 'Token incorrecto o sin permisos. Verifica tu token.';
+      if (msg.includes('404')) msg = 'No se encontró posts.json en el repositorio.';
+      document.getElementById('post-list-wrap').innerHTML =
+        `<div class="empty"><div class="empty-icon">⚠️</div><p>${msg}<br><br>
+        <button class="btn btn-outline btn-sm" onclick="logout()">Cambiar token</button></p></div>`;
+    }
+  }
+
+  function showDashboard() {
+    renderPostList();
+    showPage('page-dashboard');
+  }
+
+  function renderPostList() {
+    const wrap = document.getElementById('post-list-wrap');
+    document.getElementById('post-count-label').textContent = `(${posts.length})`;
+
+    if (!posts.length) {
+      wrap.innerHTML = `<div class="empty"><div class="empty-icon">📝</div>
+        <p>No hay artículos aún. ¡Crea el primero!</p></div>`;
+      return;
+    }
+
+    const sorted = [...posts].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    wrap.innerHTML = `<div class="post-list">${sorted.map(p => `
+      <div class="post-card">
+        <div class="post-card-info">
+          <div class="post-card-title">${escHtml(p.title)}</div>
+          <div class="post-card-meta">
+            <span class="badge badge-cat">${escHtml(p.categoryLabel||p.category)}</span>
+            ${p.featured ? '<span class="badge badge-featured">⭐ Destacado</span>' : ''}
+            <span class="post-card-date">📅 ${p.date||'Sin fecha'}</span>
+          </div>
+        </div>
+        <div class="post-card-actions">
+          <a href="${SITE}/post.html?id=${escHtml(p.id)}" target="_blank"
+             class="btn btn-outline btn-sm" title="Ver artículo publicado">↗ Ver</a>
+          <button class="btn btn-outline btn-sm" onclick="openEditor('${escHtml(p.id)}')">✏️ Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete('${escHtml(p.id)}')">🗑</button>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  // ── Editor ───────────────────────────────────────
+  function openEditor(id) {
+    editingId = id;
+    document.getElementById('editor-title').textContent = id ? 'Editar artículo' : 'Nuevo artículo';
+    document.getElementById('btn-save').innerHTML = id ? '💾 Guardar cambios' : '💾 Publicar artículo';
+
+    if (id) {
+      const p = posts.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('f-title').value     = p.title     || '';
+      document.getElementById('f-category').value  = p.category  || 'ansiedad';
+      document.getElementById('f-date').value      = p.date      || today();
+      document.getElementById('f-readtime').value  = parseInt(p.readTime) || '';
+      document.getElementById('f-featured').checked= !!p.featured;
+      document.getElementById('f-summary').value   = p.summary   || '';
+      document.getElementById('f-image').value     = p.image     || '';
+      document.getElementById('f-image-alt').value = p.imageAlt  || '';
+      document.getElementById('f-content').innerHTML = p.content || '';
+      document.getElementById('id-preview').textContent = `URL: /post.html?id=${p.id}`;
+    } else {
+      document.getElementById('f-title').value     = '';
+      document.getElementById('f-category').value  = 'ansiedad';
+      document.getElementById('f-date').value      = today();
+      document.getElementById('f-readtime').value  = '';
+      document.getElementById('f-featured').checked= false;
+      document.getElementById('f-summary').value   = '';
+      document.getElementById('f-image').value     = '';
+      document.getElementById('f-image-alt').value = '';
+      document.getElementById('f-content').innerHTML = '';
+      document.getElementById('id-preview').textContent = '';
+    }
+    showPage('page-editor');
+  }
+
+  function onTitleChange() {
+    if (editingId) return; // don't change ID when editing
+    const title = document.getElementById('f-title').value;
+    const id    = slugify(title);
+    document.getElementById('id-preview').textContent = id ? `URL: /post.html?id=${id}` : '';
+  }
+
+  // ── Save ─────────────────────────────────────────
+  async function savePost() {
+    const title    = document.getElementById('f-title').value.trim();
+    const category = document.getElementById('f-category').value;
+    const date     = document.getElementById('f-date').value;
+    const summary  = document.getElementById('f-summary').value.trim();
+    const content  = document.getElementById('f-content').innerHTML.trim();
+    const rt       = parseInt(document.getElementById('f-readtime').value) || 5;
+    const featured = document.getElementById('f-featured').checked;
+    const image    = document.getElementById('f-image').value.trim();
+    const imageAlt = document.getElementById('f-image-alt').value.trim();
+
+    if (!title)   { showStatus('⚠️ El título es obligatorio.', 'error');   return; }
+    if (!summary) { showStatus('⚠️ El resumen es obligatorio.', 'error');  return; }
+    if (!content || content === '<br>') { showStatus('⚠️ El contenido es obligatorio.', 'error'); return; }
+
+    const id = editingId || slugify(title) || randomId();
+
+    const post = {
+      id, title,
+      category,
+      categoryLabel: CATEGORY_LABELS[category] || category,
+      readTime: `${rt} min lectura`,
+      date,
+      featured,
+      image:    image    || `https://via.placeholder.com/800x450/5D8064/FFFFFF?text=${encodeURIComponent(category)}`,
+      imageAlt: imageAlt || title,
+      summary,
+      content,
+    };
+
+    // Show saving overlay
+    document.getElementById('saving-msg').textContent = editingId ? 'Guardando cambios...' : 'Publicando artículo...';
+    document.getElementById('saving-overlay').classList.add('show');
+
+    try {
+      // Refresh SHA before write to avoid conflicts
+      const freshData = await ghGet();
+      fileSha = freshData.sha;
+      const freshPosts = JSON.parse(b64decode(freshData.content));
+
+      let newPosts;
+      if (editingId) {
+        newPosts = freshPosts.map(p => p.id === editingId ? post : p);
+      } else {
+        newPosts = [post, ...freshPosts];
+      }
+
+      const commitMsg = editingId
+        ? `Editar artículo: ${title}`
+        : `Nuevo artículo: ${title}`;
+
+      await ghPut(newPosts, commitMsg);
+      posts = newPosts;
+
+      document.getElementById('saving-overlay').classList.remove('show');
+      showStatus('✅ ¡Artículo publicado! Google lo encontrará en los próximos días.', 'success');
+      showDashboard();
+    } catch(e) {
+      document.getElementById('saving-overlay').classList.remove('show');
+      let msg = e.message || 'Error al guardar';
+      if (msg.includes('409')) msg = 'Conflicto al guardar. Recarga la página e intenta de nuevo.';
+      if (msg.includes('401')) msg = 'Token sin permisos de escritura. Verifica tu token.';
+      showStatus('❌ ' + msg, 'error');
+    }
+  }
+
+  // ── Delete ───────────────────────────────────────
+  let pendingDeleteId = null;
+
+  function confirmDelete(id) {
+    const p = posts.find(x => x.id === id);
+    if (!p) return;
+    pendingDeleteId = id;
+    document.getElementById('modal-delete-msg').textContent =
+      `¿Eliminar "${p.title}"? Esta acción no se puede deshacer.`;
+    document.getElementById('modal-confirm-btn').onclick = doDelete;
+    document.getElementById('modal-delete').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-delete').classList.remove('open');
+    pendingDeleteId = null;
+  }
+
+  async function doDelete() {
+    closeModal();
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    document.getElementById('saving-msg').textContent = 'Eliminando artículo...';
+    document.getElementById('saving-overlay').classList.add('show');
+    try {
+      const freshData = await ghGet();
+      fileSha = freshData.sha;
+      const freshPosts = JSON.parse(b64decode(freshData.content));
+      const newPosts = freshPosts.filter(p => p.id !== id);
+      const deleted  = freshPosts.find(p => p.id === id);
+      await ghPut(newPosts, `Eliminar artículo: ${deleted ? deleted.title : id}`);
+      posts = newPosts;
+      document.getElementById('saving-overlay').classList.remove('show');
+      showStatus('🗑 Artículo eliminado.', 'success');
+      renderPostList();
+    } catch(e) {
+      document.getElementById('saving-overlay').classList.remove('show');
+      showStatus('❌ Error al eliminar: ' + (e.message || ''), 'error');
+    }
+  }
+
+  // ── Rich text editor helpers ──────────────────────
+  function fmt(cmd) {
+    document.getElementById('f-content').focus();
+    document.execCommand(cmd, false, null);
+  }
+
+  function fmtBlock(tag) {
+    document.getElementById('f-content').focus();
+    document.execCommand('formatBlock', false, tag);
+  }
+
+  function insertLink() {
+    const url = prompt('URL del enlace:');
+    if (!url) return;
+    document.getElementById('f-content').focus();
+    document.execCommand('createLink', false, url);
+  }
+
+  // ── GitHub API ────────────────────────────────────
+  async function ghGet() {
+    const r = await fetch(API, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      }
+    });
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    return r.json();
+  }
+
+  async function ghPut(postsArray, message) {
+    const content = b64encode(JSON.stringify(postsArray, null, 2));
+    const r = await fetch(API, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message, content, sha: fileSha }),
+    });
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      throw new Error(`${r.status}: ${body.message || r.statusText}`);
+    }
+    const data = await r.json();
+    fileSha = data.content.sha;
+    return data;
+  }
+
+  // ── Utilities ─────────────────────────────────────
+  function b64decode(str) {
+    return decodeURIComponent(
+      atob(str.replace(/\n/g, ''))
+        .split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+    );
+  }
+
+  function b64encode(str) {
+    // TextEncoder handles full Unicode (accents, emoji) correctly
+    const bytes = new TextEncoder().encode(str);
+    return btoa(Array.from(bytes, b => String.fromCharCode(b)).join(''));
+  }
+
+  function slugify(str) {
+    return str
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 60);
+  }
+
+  function randomId() {
+    return Math.random().toString(36).slice(2, 8) + Date.now().toString(36);
+  }
+
+  function today() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  function escHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function showStatus(msg, type = '') {
+    const el = document.getElementById('status-bar');
+    el.textContent = msg;
+    el.className = `status ${type}`;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.add('hidden'), 4000);
+  }
+</script>
+</body>
+</html>
