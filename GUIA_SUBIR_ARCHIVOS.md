@@ -1,113 +1,161 @@
-# 📋 Instrucciones para subir los archivos al sitio web de Umana
+# 🚀 Blog de Umana — Guía completa de publicación y SEO automático
 
-Estos son los archivos que necesitas subir a tu repositorio en GitHub para que Google pueda indexar los artículos del blog. Son **5 archivos**. Tarda unos **10 minutos**.
+## 🧠 Cómo funciona (resumen)
 
-Inicia sesión con la cuenta **`Umana-Salud-Mental`** antes de empezar.
+```
+Tú editas posts.json → GitHub Action se activa solo → sitemap.xml se regenera →
+Google encuentra los nuevos artículos en su próximo rastreo (cada pocos días) ✅
+```
 
----
-
-## 📥 Paso 1 — Descarga los 5 archivos a tu computadora
-
-Haz clic en cada enlace y guarda el archivo con su nombre original:
-
-| # | Archivo | Descarga directa | Acción |
-|---|---------|-----------------|--------|
-| 1 | `post.html` | [⬇️ Descargar post.html](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/post.html) | Archivo nuevo |
-| 2 | `posts.json` | [⬇️ Descargar posts.json](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/posts.json) | Archivo nuevo |
-| 3 | `robots.txt` | [⬇️ Descargar robots.txt](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/robots.txt) | Archivo nuevo |
-| 4 | `sitemap.xml` | [⬇️ Descargar sitemap.xml](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/sitemap.xml) | Archivo nuevo |
-| 5 | `recursos.html` | [⬇️ Descargar recursos.html](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/recursos.html) | Reemplaza el existente |
-
-> **Cómo guardar cada archivo:** Al hacer clic en el enlace se abrirá el texto en el navegador. Presiona **`Ctrl + S`** (Windows) o **`Cmd + S`** (Mac), elige la carpeta donde guardarlo y asegúrate de que el nombre sea exactamente como está en la tabla (por ejemplo `post.html`, no `post.txt`). En el diálogo de "Tipo", selecciona **"Todos los archivos"** para evitar que Windows agregue `.txt` al final.
+**No necesitas indexar cada artículo manualmente.** Una vez configurado el sitemap en Google Search Console, Google lo re-rastrea automáticamente y descubre los artículos nuevos por su cuenta.
 
 ---
 
-## 📤 Paso 2 — Sube los primeros 4 archivos (nuevos)
+## 🔁 Flujo normal para publicar un artículo nuevo
 
-Ve a 👉 **https://github.com/Umana-Salud-Mental/umana-salud-mental.github.io**
+Una vez que hayas hecho el **Setup Inicial** (abajo), publicar un artículo nuevo son **2 pasos**:
 
-1. Haz clic en el botón **"Add file"** → **"Upload files"**
+### Paso 1 — Agrega el artículo a `posts.json`
 
-   ![Botón Add file](https://docs.github.com/assets/cb-77170/mw-1440/images/help/repository/upload-files-button.webp)
+1. Ve a 👉 **https://github.com/Umana-Salud-Mental/umana-salud-mental.github.io/blob/main/posts.json**
+2. Haz clic en el **lápiz ✏️** para editar el archivo
+3. Agrega una nueva entrada al inicio del array `[...]`, siguiendo el mismo formato:
 
-2. Arrastra los **4 archivos** de una vez al área punteada (o haz clic en "choose your files"):
-   - `post.html`
-   - `posts.json`
-   - `robots.txt`
-   - `sitemap.xml`
+```json
+{
+  "id": "un-id-unico-aqui",
+  "title": "Título de tu artículo",
+  "category": "ansiedad",
+  "categoryLabel": "Ansiedad",
+  "readTime": 5,
+  "date": "2026-04-01",
+  "featured": false,
+  "image": "https://images.unsplash.com/...",
+  "imageAlt": "Descripción de la imagen",
+  "summary": "Resumen de 1-2 oraciones para las tarjetas.",
+  "content": "<p>Contenido HTML del artículo...</p>"
+}
+```
 
-3. En la sección **"Commit changes"** que aparece abajo:
-   - Mensaje: `Agregar archivos para indexación en Google`
-   - Selecciona: **"Commit directly to the `main` branch"**
+> **¿Cómo creo el `id`?** Puede ser cualquier texto sin espacios. Por ejemplo: `ansiedad-en-el-trabajo-2026`. Solo debe ser único (diferente a los otros IDs).
 
-4. Haz clic en el botón verde **"Commit changes"**
+4. En "Commit changes": escribe un mensaje como `Nuevo artículo: título del post` → **"Commit directly to main"** → **"Commit changes"**
 
-✅ ¡Los 4 archivos están subidos!
+### Paso 2 — Listo, el sistema hace el resto
+
+En cuanto guardas el commit:
+- ✅ El workflow **"Auto-actualizar sitemap"** detecta el cambio en `posts.json`
+- ✅ Regenera `sitemap.xml` con la nueva URL del artículo
+- ✅ Google encuentra el nuevo artículo en su próximo rastreo (normalmente en pocos días)
+
+**¿Cuándo aparece en Google?** Generalmente entre 3 y 14 días después de publicar.
 
 ---
 
-## 🔄 Paso 3 — Reemplaza `recursos.html` (archivo existente)
+## ⚙️ Setup inicial (hacer una sola vez)
 
-Este paso es diferente porque el archivo ya existe y hay que reemplazar su contenido.
+Antes de que el flujo automático funcione, necesitas hacer el setup una vez. Son **3 pasos**.
 
+### Paso 1 — Subir los archivos al sitio en vivo
+
+Tienes dos opciones:
+
+#### Opción A — Manual (no necesitas token) ✅ Recomendado para empezar
+
+Descarga estos 6 archivos y súbelos al repositorio `umana-salud-mental.github.io`:
+
+| Archivo | Descarga | Acción |
+|---------|----------|--------|
+| `post.html` | [⬇️ Descargar](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/post.html) | Archivo nuevo |
+| `posts.json` | [⬇️ Descargar](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/posts.json) | Archivo nuevo |
+| `robots.txt` | [⬇️ Descargar](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/robots.txt) | Archivo nuevo |
+| `sitemap.xml` | [⬇️ Descargar](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/sitemap.xml) | Archivo nuevo |
+| `recursos.html` | [⬇️ Descargar](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/recursos.html) | Reemplaza el existente |
+| `generate-sitemap.js` | [⬇️ Descargar](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/generate-sitemap.js) | Archivo nuevo |
+
+**Cómo guardar cada archivo:** Al hacer clic se abre el texto. Presiona `Ctrl + S` (Windows) o `Cmd + S` (Mac). Selecciona **"Todos los archivos"** en el tipo para que no agregue `.txt` al final.
+
+**Subir los 5 archivos nuevos de una sola vez:**
+1. Ve a 👉 **https://github.com/Umana-Salud-Mental/umana-salud-mental.github.io**
+2. Clic en **"Add file"** → **"Upload files"**
+3. Arrastra `post.html`, `posts.json`, `robots.txt`, `sitemap.xml` y `generate-sitemap.js`
+4. Mensaje: `Setup inicial: blog, sitemap, robots.txt`
+5. Clic en **"Commit changes"**
+
+**Reemplazar `recursos.html`:**
 1. Ve a 👉 **https://github.com/Umana-Salud-Mental/umana-salud-mental.github.io/blob/main/recursos.html**
+2. Clic en el **lápiz ✏️** → selecciona todo con `Ctrl + A` → borra → pega el contenido del archivo descargado
+3. Mensaje: `Actualizar recursos.html` → **"Commit changes"**
 
-2. Haz clic en el ícono de **lápiz ✏️** (arriba a la derecha del contenido) — "*Edit this file*"
+**Agregar el workflow de auto-actualización:**
+1. Ve a 👉 **https://github.com/Umana-Salud-Mental/umana-salud-mental.github.io**
+2. Crea la carpeta `.github/workflows/` navegando a ella (GitHub la crea automáticamente)
+3. Clic en **"Add file"** → **"Create new file"**
+4. En el campo del nombre escribe: `.github/workflows/sitemap-auto-update.yml`
+5. Pega el contenido del archivo [`sitemap-auto-update.yml`](https://raw.githubusercontent.com/alexkkhg19m-dotcom/Umana/copilot/fix-noindex-tag-issue/.github/workflows/sitemap-auto-update.yml)
+6. Mensaje: `Agregar workflow de auto-actualización de sitemap` → **"Commit changes"**
 
-3. Selecciona **todo** el texto del editor con **`Ctrl + A`** (Windows) o **`Cmd + A`** (Mac) y bórralo con **`Delete`**
+#### Opción B — Automático con token (si quieres hacerlo con un clic)
 
-4. Abre el archivo `recursos.html` que descargaste en el Paso 1 con el Bloc de Notas (Windows) o TextEdit (Mac)
-
-5. Selecciona todo con **`Ctrl + A`**, copia con **`Ctrl + C`**
-
-6. Vuelve a la pestaña de GitHub y pega con **`Ctrl + V`**
-
-7. En la sección **"Commit changes"**:
-   - Mensaje: `Actualizar recursos.html con enlaces a los artículos`
-   - Selecciona: **"Commit directly to the `main` branch"**
-
-8. Haz clic en el botón verde **"Commit changes"**
-
-✅ ¡`recursos.html` actualizado!
-
----
-
-## ✅ Paso 4 — Verifica que todo funciona
-
-Espera **2 minutos** para que GitHub Pages actualice el sitio y abre estas URLs:
-
-| URL | Qué deberías ver |
-|-----|-----------------|
-| https://umana-salud-mental.github.io/post.html?id=mn3lqa3fk2gvdsqxajo | Artículo: "10 Técnicas Efectivas para Manejar la Ansiedad" |
-| https://umana-salud-mental.github.io/robots.txt | Texto con `User-agent: *` |
-| https://umana-salud-mental.github.io/sitemap.xml | Lista de URLs en formato XML |
-
-Si las tres funcionan, ¡ya está todo listo! 🎉
+Requiere crear un Personal Access Token (PAT) para la cuenta `Umana-Salud-Mental`:
+1. Ve a 👉 **https://github.com/settings/tokens/new** (con la cuenta `Umana-Salud-Mental`)
+2. Nota: `Deploy Umana` | Expiration: `90 days` | Scope: ✅ `repo`
+3. Copia el token (`ghp_...`)
+4. Ve a 👉 **https://github.com/alexkkhg19m-dotcom/Umana/settings/secrets/actions/new**
+5. Name: `LIVE_SITE_PAT` | Value: (pega el token) → **"Add secret"**
+6. Ve a 👉 **https://github.com/alexkkhg19m-dotcom/Umana/actions/workflows/deploy-live.yml**
+7. Clic en **"Run workflow"** → escribe `si` → **"Run workflow"**
 
 ---
 
-## 🔍 Paso 5 — Solicitar indexación en Google Search Console
+### Paso 2 — Registrar el sitemap en Google Search Console (una sola vez)
 
 1. Ve a 👉 **https://search.google.com/search-console/**
 2. Selecciona la propiedad `umana-salud-mental.github.io`
-3. En el menú izquierdo: **"Inspección de URL"**
-4. Pega en la barra: `https://umana-salud-mental.github.io/post.html?id=mn3lqa3fk2gvdsqxajo`
-5. Presiona Enter y haz clic en **"Solicitar indexación"**
+3. En el menú izquierdo: **"Sitemaps"**
+4. Escribe `sitemap.xml` y haz clic en **"Enviar"**
 
-### Envía también el Sitemap:
-1. En el menú izquierdo: **"Sitemaps"**
-2. Escribe `sitemap.xml` en el campo y haz clic en **"Enviar"**
+✅ ¡Hecho! Google ahora rastrea el sitemap automáticamente cada pocos días.
+
+---
+
+### Paso 3 — Pedir indexación para los artículos que ya existen (solo esta vez)
+
+Para los 12 artículos que ya existen, Google los encontrará via sitemap, pero puedes acelerar el proceso:
+
+1. En Search Console: **"Inspección de URL"**
+2. Pega: `https://umana-salud-mental.github.io/post.html?id=mn3lqa3fk2gvdsqxajo`
+3. Clic en **"Solicitar indexación"**
+4. Repite para los demás artículos si quieres acelerar (opcional)
+
+---
+
+## ✅ Verificar que todo funciona
+
+Espera 2 minutos después del setup y abre estas URLs:
+
+| URL | Qué ver |
+|-----|---------|
+| https://umana-salud-mental.github.io/post.html?id=mn3lqa3fk2gvdsqxajo | Artículo completo del blog |
+| https://umana-salud-mental.github.io/robots.txt | `User-agent: *` |
+| https://umana-salud-mental.github.io/sitemap.xml | Lista de URLs en XML |
 
 ---
 
 ## ❓ Preguntas frecuentes
 
-**¿Cuánto tarda Google en indexar?**
-Entre unos días y 2 semanas después de solicitar la indexación.
+**¿Tengo que ir a Google Search Console cada vez que publico?**
+No. Solo hay que registrar el sitemap una vez (Paso 2 del setup). Después, Google lo revisa automáticamente cada pocos días y encuentra los nuevos artículos solo.
 
-**¿Tengo que repetir esto para cada artículo nuevo?**
-No. Solo hay que agregar la entrada nueva en `posts.json` y automáticamente tendrá su URL.
+**¿Cuánto tarda Google en indexar un artículo nuevo?**
+Normalmente entre 3 y 14 días después de que el sitemap se actualiza. Depende de la frecuencia con que Google rastree tu sitio.
 
-**¿Me equivoqué al subir un archivo?**
-Sin problema. GitHub guarda todo el historial. Puedes repetir el proceso y subir la versión correcta encima.
+**¿Cómo creo un ID único para cada artículo?**
+Usa el título del artículo en minúsculas, sin acentos, con guiones en lugar de espacios. Ejemplo: `como-superar-la-ansiedad-2026`. También puedes usar cualquier texto corto aleatorio.
+
+**¿Qué pasa si me equivoco en posts.json?**
+GitHub guarda todo el historial. Si algo falla, puedes hacer clic en "History" del archivo y revertir al commit anterior.
+
+**¿El sitemap se actualiza solo cuando edito posts.json en el sitio en vivo?**
+Sí — el workflow `sitemap-auto-update.yml` que se instaló en el setup hace exactamente eso.
 

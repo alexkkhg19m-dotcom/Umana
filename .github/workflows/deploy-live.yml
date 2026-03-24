@@ -1,10 +1,14 @@
-name: 🚀 Deploy to Live Site
+name: 🚀 Deploy inicial al sitio en vivo
+
+# Usa este workflow una sola vez para hacer el deploy inicial.
+# Después de este deploy, el workflow "Auto-deploy nuevo artículo"
+# (auto-blog.yml) se activará automáticamente cada vez que edites posts.json.
 
 on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: 'Type "si" to confirm deploy to umana-salud-mental.github.io'
+        description: 'Escribe "si" para confirmar el deploy a umana-salud-mental.github.io'
         required: true
         default: 'si'
 
@@ -15,34 +19,43 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout fix branch (files to deploy)
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: copilot/fix-noindex-tag-issue
 
-      - name: Clone live site repo
+      - name: Generar sitemap.xml desde posts.json
+        run: node .github/scripts/generate-sitemap.js
+
+      - name: Clonar repositorio del sitio en vivo
         run: |
           git clone https://x-access-token:${{ secrets.LIVE_SITE_PAT }}@github.com/Umana-Salud-Mental/umana-salud-mental.github.io.git live-site
 
-      - name: Copy fixed files into live site
+      - name: Copiar archivos al sitio en vivo
         run: |
-          cp post.html     live-site/post.html
-          cp posts.json    live-site/posts.json
-          cp robots.txt    live-site/robots.txt
-          cp sitemap.xml   live-site/sitemap.xml
-          cp recursos.html live-site/recursos.html
+          cp post.html      live-site/post.html
+          cp posts.json     live-site/posts.json
+          cp robots.txt     live-site/robots.txt
+          cp sitemap.xml    live-site/sitemap.xml
+          cp recursos.html  live-site/recursos.html
+          # Copiar workflow de auto-actualización y script de sitemap
+          mkdir -p live-site/.github/workflows
+          cp .github/workflows/sitemap-auto-update.yml live-site/.github/workflows/sitemap-auto-update.yml
+          cp .github/scripts/generate-sitemap.js live-site/generate-sitemap.js
 
-      - name: Commit and push to live site
+      - name: Confirmar y publicar cambios en el sitio en vivo
         working-directory: live-site
         run: |
           git config user.email "noreply@github.com"
           git config user.name "Umana Deploy Bot"
-          git add post.html posts.json robots.txt sitemap.xml recursos.html
-          git diff --cached --quiet && echo "Nothing to commit" && exit 0
-          git commit -m "Fix Google Search Console noindex: add post.html, posts.json, robots.txt, sitemap.xml; update recursos.html"
+          git add -A
+          git diff --cached --quiet && echo "Sin cambios que subir" && exit 0
+          git commit -m "Deploy inicial: blog posts, sitemap, robots.txt y auto-update workflow"
           git push
 
-      - name: ✅ Done
+      - name: ✅ Listo
         run: |
           echo "Deploy completo! Los archivos ya están en el sitio web en vivo."
           echo "Visita https://umana-salud-mental.github.io para verificar."
+          echo ""
+          echo "Próximos pasos:"
+          echo "1. Registra el sitemap en Google Search Console: https://search.google.com/search-console/"
+          echo "2. Desde ahora, cada vez que edites posts.json el sitemap se actualiza solo."

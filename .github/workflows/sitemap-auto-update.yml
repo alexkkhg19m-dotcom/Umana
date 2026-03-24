@@ -1,0 +1,30 @@
+name: 🗺️ Auto-actualizar sitemap
+
+# Este workflow vive en el repositorio umana-salud-mental.github.io.
+# Se ejecuta automáticamente cada vez que editas posts.json en ese repositorio.
+# El sitemap.xml se regenera solo — Google lo encuentra en su próximo rastreo.
+
+on:
+  push:
+    branches: [main]
+    paths: [posts.json]
+
+permissions:
+  contents: write
+
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generar sitemap.xml desde posts.json
+        run: node generate-sitemap.js
+
+      - name: Guardar sitemap actualizado
+        run: |
+          git config user.email "noreply@github.com"
+          git config user.name "Umana Bot"
+          git add sitemap.xml
+          git diff --cached --quiet && echo "Sitemap sin cambios" || (git commit -m "Auto: sitemap.xml actualizado con nuevos artículos" && git push)
