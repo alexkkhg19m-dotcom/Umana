@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="noindex">
+    <link rel="canonical" id="canonical-url" href="https://umana-salud-mental.github.io/post.html">
     <meta name="description" id="meta-description" content="Artículo de salud mental - Umana">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Umana - Salud Mental">
@@ -229,7 +230,10 @@
                 document.getElementById('og-title').setAttribute('content', post.title + ' | Umana');
                 document.getElementById('og-description').setAttribute('content', post.summary);
                 document.getElementById('og-image').setAttribute('content', post.image);
-                document.getElementById('og-url').setAttribute('content', window.location.href);
+                // Point canonical to the pre-rendered static page so Google uses the static URL
+                var staticUrl = 'https://umana-salud-mental.github.io/posts/post-' + post.id + '.html';
+                document.getElementById('canonical-url').setAttribute('href', staticUrl);
+                document.getElementById('og-url').setAttribute('content', staticUrl);
 
                 var container = document.getElementById('post-container');
                 var formattedDate = formatDate(post.date);

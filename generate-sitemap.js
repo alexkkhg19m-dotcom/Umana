@@ -29,7 +29,7 @@ function urlEntry(u) {
 }
 
 const postEntries = posts.map(p => ({
-  loc:        `/post.html?id=${p.id}`,
+  loc:        `/posts/post-${p.id}.html`,
   changefreq: 'monthly',
   priority:   '0.7',
   lastmod:    p.date || new Date().toISOString().split('T')[0],

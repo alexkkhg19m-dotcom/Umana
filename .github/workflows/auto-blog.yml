@@ -19,15 +19,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generar sitemap.xml desde posts.json
-        run: node .github/scripts/generate-sitemap.js
+      - name: Generar sitemap.xml y páginas estáticas desde posts.json
+        run: |
+          node .github/scripts/generate-sitemap.js
+          node generate-posts.js
 
-      - name: Guardar sitemap actualizado en este repositorio
+      - name: Guardar sitemap y páginas estáticas en este repositorio
         run: |
           git config user.email "noreply@github.com"
           git config user.name "Umana Bot"
-          git add sitemap.xml
-          git diff --cached --quiet && echo "Sitemap sin cambios" || git commit -m "Auto: sitemap.xml actualizado con nuevos artículos"
+          git add sitemap.xml posts/
+          git diff --cached --quiet && echo "Sin cambios" || git commit -m "Auto: sitemap.xml y páginas estáticas actualizados"
           git push
 
       - name: Desplegar al sitio web en vivo
@@ -42,6 +44,9 @@ jobs:
           cp robots.txt     live-site/robots.txt
           cp sitemap.xml    live-site/sitemap.xml
           cp recursos.html  live-site/recursos.html
+          # Páginas estáticas de artículos (para indexación directa por Google)
+          mkdir -p live-site/posts
+          cp posts/*.html   live-site/posts/
 
           # Admin panel
           mkdir -p live-site/edit
