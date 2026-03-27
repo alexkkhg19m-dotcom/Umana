@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Umana Admin — Panel CMS</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --green:   #5D8064;
+            --green-d: #4a6851;
+            --cream:   #F5EFE6;
+            --dark:    #2F2F2F;
+            --peach:   #D9A88F;
+            --light:   #B7C6AD;
+            --white:   #ffffff;
+            --border:  #e0e0e0;
+            --bg:      #f7f8fa;
+            --danger:  #c0392b;
+            --success: #27ae60;
+            --sidebar-w: 220px;
+        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
+
+        /* ── Login ── */
+        #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--cream); }
+        .login-card { background: var(--white); border-radius: 16px; padding: 2.5rem 2rem; width: 100%; max-width: 400px; box-shadow: 0 8px 40px rgba(0,0,0,.10); }
+        .login-logo { font-size: 1.8rem; font-weight: 700; color: var(--green); text-align: center; margin-bottom: .25rem; }
+        .login-subtitle { text-align: center; color: #888; font-size: .9rem; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: .82rem; font-weight: 600; color: #555; margin-bottom: .35rem; }
+        .form-group input { width: 100%; padding: .7rem .9rem; border: 1.5px solid var(--border); border-radius: 8px; font-size: .95rem; outline: none; transition: border .2s; }
+        .form-group input:focus { border-color: var(--green); }
+        .btn-login { width: 100%; padding: .8rem; background: var(--green); color: var(--white); border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background .2s; margin-top: .5rem; }
+        .btn-login:hover { background: var(--green-d); }
+        .login-error { color: var(--danger); font-size: .84rem; text-align: center; margin-top: .75rem; display: none; }
+
+        /* ── App shell ── */
+        #app { display: none; }
+        .cms-layout { display: flex; min-height: 100vh; }
+
+        /* ── Sidebar ── */
+        .cms-sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--dark); color: var(--white); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; overflow-y: auto; }
+        .sidebar-logo { padding: 1.4rem 1.25rem 1rem; font-size: 1.2rem; font-weight: 700; color: var(--light); border-bottom: 1px solid rgba(255,255,255,.1); }
+        .sidebar-logo span { color: var(--white); }
+        .sidebar-nav { flex: 1; padding: .75rem 0; }
+        .nav-section-label { padding: .4rem 1.25rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.35); margin-top: .5rem; }
+        .nav-item { display: flex; align-items: center; gap: .75rem; padding: .65rem 1.25rem; cursor: pointer; transition: background .15s, color .15s; color: rgba(255,255,255,.75); font-size: .88rem; }
+        .nav-item:hover { background: rgba(255,255,255,.07); color: var(--white); }
+        .nav-item.active { background: var(--green); color: var(--white); }
+        .nav-item .icon { font-size: 1rem; flex-shrink: 0; width: 18px; text-align: center; }
+        .sidebar-footer { padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,.1); }
+        .btn-logout { display: flex; align-items: center; gap: .5rem; background: none; border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.7); padding: .5rem .9rem; border-radius: 6px; cursor: pointer; font-size: .84rem; transition: all .2s; width: 100%; }
+        .btn-logout:hover { border-color: rgba(255,255,255,.5); color: var(--white); }
+
+        /* ── Main content ── */
+        .cms-main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .cms-topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-title { font-size: 1.1rem; font-weight: 600; }
+        .topbar-actions { display: flex; gap: .5rem; }
+        .cms-body { padding: 1.5rem; flex: 1; }
+
+        /* ── Views ── */
+        .cms-view { display: none; }
+        .cms-view.active { display: block; }
+
+        /* ── Dashboard ── */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--white); border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+        .stat-value { font-size: 2rem; font-weight: 700; color: var(--green); }
+        .stat-label { font-size: .8rem; color: #888; margin-top: .1rem; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        .dash-card { background: var(--white); border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+        .dash-card h3 { font-size: .9rem; font-weight: 600; margin-bottom: .85rem; color: #666; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
+        .quick-actions { display: flex; flex-direction: column; gap: .45rem; }
+        .qa-btn { display: flex; align-items: center; gap: .55rem; padding: .6rem .85rem; border-radius: 7px; border: 1.5px solid var(--border); background: none; cursor: pointer; font-size: .86rem; color: var(--dark); transition: all .15s; text-align: left; text-decoration: none; }
+        .qa-btn:hover { border-color: var(--green); color: var(--green); background: #f0f6f2; }
+
+        /* ── Post list ── */
+        .list-toolbar { display: flex; gap: .65rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+        .list-toolbar input, .list-toolbar select { padding: .58rem .85rem; border: 1.5px solid var(--border); border-radius: 7px; font-size: .88rem; outline: none; background: var(--white); }
+        .list-toolbar input { flex: 1; min-width: 160px; }
+        .list-toolbar input:focus, .list-toolbar select:focus { border-color: var(--green); }
+        .btn { padding: .58rem 1.1rem; border-radius: 7px; border: none; cursor: pointer; font-size: .86rem; font-weight: 600; transition: all .15s; }
+        .btn-primary { background: var(--green); color: var(--white); }
+        .btn-primary:hover { background: var(--green-d); }
+        .btn-secondary { background: var(--white); color: var(--dark); border: 1.5px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+        .btn-danger { background: none; color: var(--danger); border: 1px solid var(--danger); }
+        .btn-danger:hover { background: var(--danger); color: var(--white); }
+        .btn-sm { padding: .32rem .65rem; font-size: .78rem; border-radius: 5px; }
+
+        .posts-table { background: var(--white); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+        .posts-table table { width: 100%; border-collapse: collapse; }
+        .posts-table th { background: #f9fafb; padding: .7rem 1rem; text-align: left; font-size: .75rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px solid var(--border); }
+        .posts-table td { padding: .82rem 1rem; border-bottom: 1px solid #f5f5f5; font-size: .86rem; vertical-align: middle; }
+        .posts-table tr:last-child td { border-bottom: none; }
+        .posts-table tr:hover td { background: #fafafa; }
+        .post-title-cell { font-weight: 500; }
+        .post-excerpt-prev { font-size: .76rem; color: #bbb; margin-top: .1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+        .badge { display: inline-block; padding: .18rem .5rem; border-radius: 20px; font-size: .73rem; font-weight: 600; }
+        .badge-published { background: #e8f5e9; color: #2e7d32; }
+        .badge-draft { background: #fff3e0; color: #e65100; }
+        .badge-category { background: #e8f0fe; color: #3a5abb; }
+        .post-actions { display: flex; gap: .35rem; }
+        .empty-row td { text-align: center; color: #ccc; padding: 2.5rem; }
+
+        /* ── Post Editor Overlay ── */
+        .editor-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; align-items: flex-start; justify-content: flex-end; }
+        .editor-overlay.open { display: flex; }
+        .editor-panel { width: 660px; max-width: 96vw; background: var(--white); height: 100vh; overflow-y: auto; display: flex; flex-direction: column; box-shadow: -4px 0 30px rgba(0,0,0,.18); }
+        .editor-header { padding: 1rem 1.4rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--white); z-index: 10; }
+        .editor-header h2 { font-size: .98rem; font-weight: 600; }
+        .btn-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #aaa; line-height: 1; }
+        .btn-close:hover { color: var(--dark); }
+        .editor-body { padding: 1.2rem 1.4rem; flex: 1; }
+        .editor-footer { padding: .9rem 1.4rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: .65rem; position: sticky; bottom: 0; background: var(--white); flex-wrap: wrap; }
+        .field-row { display: flex; gap: .9rem; }
+        .field-group { display: flex; flex-direction: column; gap: .3rem; margin-bottom: .9rem; flex: 1; }
+        .field-group label { font-size: .78rem; font-weight: 600; color: #555; }
+        .field-group input, .field-group select, .field-group textarea { padding: .58rem .78rem; border: 1.5px solid var(--border); border-radius: 7px; font-size: .9rem; outline: none; transition: border .2s; font-family: inherit; }
+        .field-group input:focus, .field-group select:focus, .field-group textarea:focus { border-color: var(--green); }
+        .field-hint { font-size: .73rem; color: #bbb; }
+        .quill-wrapper { border: 1.5px solid var(--border); border-radius: 7px; overflow: hidden; margin-bottom: .9rem; }
+        .quill-wrapper .ql-toolbar { border: none; border-bottom: 1px solid var(--border); }
+        .quill-wrapper .ql-container { border: none; font-size: .93rem; }
+        #post-editor { min-height: 280px; }
+        .toggle-row { display: flex; align-items: center; gap: .6rem; margin-bottom: .9rem; }
+        .toggle-row label { font-size: .84rem; color: #555; cursor: pointer; }
+        .toggle { position: relative; width: 38px; height: 21px; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 21px; transition: .3s; }
+        .toggle-slider:before { content: ''; position: absolute; width: 15px; height: 15px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
+        .toggle input:checked + .toggle-slider { background: var(--green); }
+        .toggle input:checked + .toggle-slider:before { transform: translateX(17px); }
+        .reading-hint { font-size: .78rem; color: var(--green); font-weight: 500; }
+        .save-flash { color: var(--success); font-size: .84rem; display: none; align-items: center; gap: .3rem; }
+
+        /* ── Site Content Editor ── */
+        .content-tabs { display: flex; gap: .3rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+        .content-tab { padding: .42rem .85rem; border-radius: 6px; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; font-size: .83rem; transition: all .15s; color: #666; }
+        .content-tab.active { background: var(--green); color: var(--white); border-color: var(--green); }
+        .content-section { display: none; background: var(--white); border-radius: 10px; padding: 1.4rem; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+        .content-section.active { display: block; }
+        .section-header { margin-bottom: 1.1rem; }
+        .section-header h3 { font-size: .98rem; font-weight: 600; }
+        .section-header p { font-size: .8rem; color: #999; margin-top: .2rem; }
+        .repeatable-item { border: 1.5px solid var(--border); border-radius: 8px; padding: .9rem; margin-bottom: .65rem; }
+        .item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .7rem; }
+        .item-label { font-size: .78rem; font-weight: 700; color: #999; }
+        .btn-add-item { display: flex; align-items: center; gap: .4rem; background: none; border: 1.5px dashed var(--border); color: #bbb; padding: .55rem 1rem; border-radius: 7px; cursor: pointer; font-size: .84rem; transition: all .15s; width: 100%; justify-content: center; margin-top: .4rem; }
+        .btn-add-item:hover { border-color: var(--green); color: var(--green); }
+        .content-save-bar { display: flex; align-items: center; gap: .65rem; margin-top: 1.1rem; padding-top: .9rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .content-save-note { font-size: .76rem; color: #bbb; }
+
+        /* ── Settings ── */
+        .settings-card { background: var(--white); border-radius: 10px; padding: 1.4rem; box-shadow: 0 1px 6px rgba(0,0,0,.06); max-width: 520px; margin-bottom: 1.1rem; }
+        .settings-card h3 { font-size: .98rem; font-weight: 600; margin-bottom: .9rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+        .info-text { font-size: .84rem; color: #888; margin-bottom: .75rem; line-height: 1.6; }
+        .data-btns { display: flex; gap: .65rem; flex-wrap: wrap; }
+
+        /* ── Info Banner ── */
+        .info-banner { background: #fffbf0; border: 1px solid #ffe08a; border-radius: 8px; padding: .72rem 1rem; margin-bottom: 1rem; font-size: .83rem; color: #7a6000; }
+
+        /* Responsive */
+        @media (max-width: 860px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .cms-sidebar { width: 56px; min-width: 56px; }
+            .sidebar-logo span, .nav-section-label, .nav-item span:last-child, .sidebar-footer span:last-child { display: none; }
+            .nav-item { justify-content: center; padding: .7rem; }
+            .btn-logout { justify-content: center; padding: .5rem; }
+            .cms-main { margin-left: 56px; }
+            .editor-panel { width: 100vw; }
+            .field-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+    <div class="login-card">
+        <div class="login-logo">Umana</div>
+        <p class="login-subtitle">Panel de Administración CMS</p>
+        <form id="login-form" novalidate>
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" autocomplete="username" placeholder="Usuario" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" autocomplete="current-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-login">Entrar al Panel</button>
+            <p class="login-error" id="login-error">Usuario o contraseña incorrectos.</p>
+        </form>
+    </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app">
+    <div class="cms-layout">
+        <!-- Sidebar -->
+        <aside class="cms-sidebar">
+            <div class="sidebar-logo">✏️ <span>Umana</span> CMS</div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Principal</div>
+                <div class="nav-item active" data-view="dashboard"><span class="icon">🏠</span><span>Dashboard</span></div>
+                <div class="nav-section-label">Contenido</div>
+                <div class="nav-item" data-view="posts"><span class="icon">📝</span><span>Blog / Artículos</span></div>
+                <div class="nav-item" data-view="site-content"><span class="icon">🎨</span><span>Contenido del Sitio</span></div>
+                <div class="nav-section-label">Sistema</div>
+                <div class="nav-item" data-view="settings"><span class="icon">⚙️</span><span>Configuración</span></div>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" id="btn-logout"><span>🚪</span><span>Salir</span></button>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="cms-main">
+            <div class="cms-topbar">
+                <div class="topbar-title" id="topbar-title">Dashboard</div>
+                <div class="topbar-actions" id="topbar-actions">
+                    <a href="../" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none;">👁️ Ver sitio</a>
+                </div>
+            </div>
+
+            <div class="cms-body">
+
+                <!-- ── DASHBOARD ── -->
+                <section class="cms-view active" id="view-dashboard">
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Total artículos</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-published">0</div><div class="stat-label">Publicados</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-drafts">0</div><div class="stat-label">Borradores</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-featured">0</div><div class="stat-label">Destacados</div></div>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="dash-card">
+                            <h3>Acciones Rápidas</h3>
+                            <div class="quick-actions">
+                                <button class="qa-btn" onclick="goTo('posts','openNewPost')"><span>✍️</span> Nuevo artículo</button>
+                                <button class="qa-btn" onclick="goTo('site-content','hero')"><span>🖼️</span> Editar Hero / Portada</button>
+                                <button class="qa-btn" onclick="goTo('site-content','services')"><span>🧠</span> Editar Servicios</button>
+                                <button class="qa-btn" onclick="goTo('site-content','howItWorks')"><span>🪜</span> Editar Cómo Funciona</button>
+                                <button class="qa-btn" onclick="goTo('site-content','testimonials')"><span>💬</span> Editar Testimonios</button>
+                                <button class="qa-btn" onclick="goTo('site-content','faq')"><span>❓</span> Editar FAQ</button>
+                                <button class="qa-btn" onclick="goTo('site-content','contact')"><span>📞</span> Editar Contacto</button>
+                                <button class="qa-btn" onclick="goTo('site-content','trust')"><span>📊</span> Editar Estadísticas</button>
+                                <button class="qa-btn" onclick="goTo('site-content','social')"><span>📱</span> Editar Redes Sociales</button>
+                                <button class="qa-btn" onclick="goTo('site-content','branding')"><span>🎨</span> Editar Logo / Marca</button>
+                                <button class="qa-btn" onclick="goTo('site-content','blogPreview')"><span>📰</span> Editar Blog Preview</button>
+                                <a href="../" target="_blank" class="qa-btn"><span>👁️</span> Ver sitio web</a>
+                            </div>
+                        </div>
+                        <div class="dash-card">
+                            <h3>Artículos Recientes</h3>
+                            <div id="recent-posts-list"><p style="color:#ccc;font-size:.86rem;">Sin artículos todavía.</p></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── BLOG POSTS ── -->
+                <section class="cms-view" id="view-posts">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem;flex-wrap:wrap;gap:.6rem;">
+                        <h2 style="font-size:1.1rem;font-weight:700;margin:0;">📝 Blog / Artículos</h2>
+                        <button class="btn btn-primary" onclick="openNewPost()">✍️ Nuevo artículo</button>
+                    </div>
+                    <div class="list-toolbar">
+                        <input type="text" id="search-posts" placeholder="🔍  Buscar artículos..." oninput="renderPostList()">
+                        <select id="filter-category" onchange="renderPostList()">
+                            <option value="">Todas las categorías</option>
+                            <option value="ansiedad">😰 Ansiedad</option>
+                            <option value="depresion">😔 Depresión</option>
+                            <option value="relaciones">💑 Relaciones</option>
+                            <option value="estres">😤 Estrés</option>
+                            <option value="autocuidado">🧘 Autocuidado</option>
+                            <option value="familia">👨‍👩‍👧‍👦 Familia</option>
+                            <option value="general">📄 General</option>
+                        </select>
+                        <select id="filter-status" onchange="renderPostList()">
+                            <option value="">Todos los estados</option>
+                            <option value="published">Publicado</option>
+                            <option value="draft">Borrador</option>
+                        </select>
+                    </div>
+                    <div class="posts-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Título</th>
+                                    <th>Categoría</th>
+                                    <th>Estado</th>
+                                    <th>Actualizado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="posts-tbody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ── SITE CONTENT ── -->
+                <section class="cms-view" id="view-site-content">
+                    <div class="info-banner" id="cms-content-banner">
+                        🔑 <strong>Publicación automática:</strong> Los cambios se guardan en este navegador <em>y</em> se publican en GitHub si tienes el Token configurado en Configuración — todos los usuarios verán los cambios sin pasos adicionales.
+                    </div>
+                    <div class="content-tabs" id="content-tabs">
+                        <button class="content-tab active" data-section="hero">🖼️ Hero</button>
+                        <button class="content-tab" data-section="about">👥 Quiénes Somos</button>
+                        <button class="content-tab" data-section="services">🧠 Servicios</button>
+                        <button class="content-tab" data-section="howItWorks">🪜 Cómo Funciona</button>
+                        <button class="content-tab" data-section="testimonials">💬 Testimonios</button>
+                        <button class="content-tab" data-section="faq">❓ FAQ</button>
+                        <button class="content-tab" data-section="schedule">🕐 Horarios</button>
+                        <button class="content-tab" data-section="contact">📞 Contacto</button>
+                        <button class="content-tab" data-section="trust">📊 Estadísticas</button>
+                        <button class="content-tab" data-section="social">📱 Redes Sociales</button>
+                        <button class="content-tab" data-section="branding">🎨 Marca & Logo</button>
+                        <button class="content-tab" data-section="blogPreview">📰 Blog Preview</button>
+                    </div>
+
+                    <!-- Hero -->
+                    <div class="content-section active" id="cs-hero">
+                        <div class="section-header"><h3>Hero — Primera sección</h3><p>Lo primero que ve el visitante.</p></div>
+                        <div class="field-group"><label>Título principal (H1)</label><input type="text" id="hero-h1" placeholder="Tu salud mental importa"></div>
+                        <div class="field-group"><label>Subtítulo</label><input type="text" id="hero-subtitle" placeholder="Terapia 100% online..."></div>
+                        <div class="field-group"><label>Descripción</label><textarea id="hero-desc" rows="3"></textarea></div>
+                        <div class="field-row">
+                            <div class="field-group"><label>Texto botón CTA</label><input type="text" id="hero-cta" placeholder="Comienza tu viaje de bienestar"></div>
+                            <div class="field-group"><label>Enlace botón CTA</label><input type="text" id="hero-cta-link" placeholder="#contacto"></div>
+                        </div>
+                        <div class="field-group">
+                            <label>Imagen de portada / fondo (opcional)</label>
+                            <input type="url" id="hero-bg-image" placeholder="https://imagen.com/portada.jpg">
+                            <div style="margin-top:.35rem;display:flex;align-items:center;gap:.6rem;">
+                                <input type="file" id="hero-bg-image-file" accept="image/*" onchange="handleSectionImageUpload(this,'hero-bg-image','hero-bg-preview')">
+                                <span id="hero-bg-upload-status" style="font-size:.78rem;color:#5D8064;display:none;">✓ Cargada</span>
+                            </div>
+                            <div id="hero-bg-preview" style="margin-top:.5rem;display:none;"><img style="max-width:100%;max-height:160px;border-radius:8px;object-fit:cover;" alt="Preview portada"></div>
+                            <span class="field-hint">Recomendado: 1920×1080 px · JPG o WebP · máx. 500 KB. Deja vacío para usar el fondo degradado por defecto.</span>
+                        </div>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('hero')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('hero')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-hero">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- About -->
+                    <div class="content-section" id="cs-about">
+                        <div class="section-header"><h3>Quiénes Somos</h3></div>
+                        <div class="field-group"><label>Título sección</label><input type="text" id="about-heading" placeholder="Quiénes Somos"></div>
+                        <div class="field-group"><label>Subtítulo (h3)</label><input type="text" id="about-subheading" placeholder="Umana - Tu Plataforma..."></div>
+                        <div class="field-group"><label>Párrafo 1</label><textarea id="about-p1" rows="3"></textarea></div>
+                        <div class="field-group"><label>Párrafo 2</label><textarea id="about-p2" rows="3"></textarea></div>
+                        <div class="field-group">
+                            <label>Foto del equipo / imagen lateral (opcional)</label>
+                            <input type="url" id="about-image" placeholder="https://imagen.com/equipo.jpg">
+                            <div style="margin-top:.35rem;display:flex;align-items:center;gap:.6rem;">
+                                <input type="file" id="about-image-file" accept="image/*" onchange="handleSectionImageUpload(this,'about-image','about-image-preview')">
+                                <span id="about-img-upload-status" style="font-size:.78rem;color:#5D8064;display:none;">✓ Cargada</span>
+                            </div>
+                            <div id="about-image-preview" style="margin-top:.5rem;display:none;"><img style="max-width:100%;max-height:140px;border-radius:8px;object-fit:cover;" alt="Preview equipo"></div>
+                            <span class="field-hint">Recomendado: 600×400 px · JPG o WebP · máx. 300 KB. Se muestra a la derecha del texto de la sección.</span>
+                        </div>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('about')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('about')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-about">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- Services -->
+                    <div class="content-section" id="cs-services">
+                        <div class="section-header"><h3>Nuestros Servicios</h3></div>
+                        <div class="field-group"><label>Título sección</label><input type="text" id="services-heading" placeholder="Nuestros Servicios"></div>
+                        <div class="field-group"><label>Introducción</label><input type="text" id="services-intro" placeholder="Ofrecemos servicios..."></div>
+                        <div id="services-items"></div>
+                        <button class="btn-add-item" onclick="addServiceItem()">+ Agregar servicio</button>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('services')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('services')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-services">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- How it works -->
+                    <div class="content-section" id="cs-howItWorks">
+                        <div class="section-header"><h3>Cómo Funciona</h3></div>
+                        <div class="field-group"><label>Título sección</label><input type="text" id="how-heading" placeholder="¿Cómo Funciona Umana?"></div>
+                        <div id="how-steps-items"></div>
+                        <button class="btn-add-item" onclick="addHowStep()">+ Agregar paso</button>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('howItWorks')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('howItWorks')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-howItWorks">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- Testimonials -->
+                    <div class="content-section" id="cs-testimonials">
+                        <div class="section-header"><h3>Testimonios</h3></div>
+                        <div class="field-group"><label>Título sección</label><input type="text" id="test-heading" placeholder="Lo que dicen nuestros pacientes"></div>
+                        <div id="testimonials-items"></div>
+                        <button class="btn-add-item" onclick="addTestimonial()">+ Agregar testimonio</button>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('testimonials')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('testimonials')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-testimonials">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- FAQ -->
+                    <div class="content-section" id="cs-faq">
+                        <div class="section-header"><h3>Preguntas Frecuentes</h3></div>
+                        <div id="faq-items"></div>
+                        <button class="btn-add-item" onclick="addFaqItem()">+ Agregar pregunta</button>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('faq')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('faq')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-faq">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- Schedule -->
+                    <div class="content-section" id="cs-schedule">
+                        <div class="section-header"><h3>Horarios de Atención</h3></div>
+                        <div class="field-row">
+                            <div class="field-group"><label>Días 1</label><input type="text" id="sch-days1" placeholder="Lunes - Viernes"></div>
+                            <div class="field-group"><label>Horario 1</label><input type="text" id="sch-hours1" placeholder="8:00 AM - 5:00 PM"></div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-group"><label>Días 2</label><input type="text" id="sch-days2" placeholder="Sábados"></div>
+                            <div class="field-group"><label>Horario 2</label><input type="text" id="sch-hours2" placeholder="9:00 AM - 12:00 PM"></div>
+                        </div>
+                        <div class="field-group"><label>Nota al pie</label><input type="text" id="sch-note" placeholder="* Agenda tu cita..."></div>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('schedule')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('schedule')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-schedule">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- Contact -->
+                    <div class="content-section" id="cs-contact">
+                        <div class="section-header"><h3>Contacto</h3></div>
+                        <div class="field-row">
+                            <div class="field-group"><label>Email</label><input type="email" id="contact-email" placeholder="hey.umana@outlook.com"></div>
+                            <div class="field-group"><label>Teléfono / WhatsApp</label><input type="tel" id="contact-phone" placeholder="+593 983404824"></div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-group"><label>Dirección / Ciudad</label><input type="text" id="contact-address" placeholder="Quito, Ecuador"></div>
+                            <div class="field-group"><label>Número WhatsApp (sin +, para enlace)</label><input type="text" id="contact-wa" placeholder="593983404824"></div>
+                        </div>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('contact')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('contact')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-contact">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- Trust Stats -->
+                    <div class="content-section" id="cs-trust">
+                        <div class="section-header"><h3>Estadísticas de Confianza</h3><p>Los 4 números destacados que aparecen en la franja inferior al hero.</p></div>
+                        <div id="trust-items"></div>
+                        <button class="btn-add-item" onclick="addTrustItem()">+ Agregar estadística</button>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('trust')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('trust')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-trust">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- Social Media -->
+                    <div class="content-section" id="cs-social">
+                        <div class="section-header"><h3>Redes Sociales</h3><p>URLs de los perfiles en el footer del sitio.</p></div>
+                        <div class="field-group">
+                            <label>TikTok URL</label>
+                            <input type="url" id="social-tiktok" placeholder="https://www.tiktok.com/@umanaterapiaonline">
+                        </div>
+                        <div class="field-group">
+                            <label>Instagram URL</label>
+                            <input type="url" id="social-instagram" placeholder="https://www.instagram.com/umana.saludmental/">
+                        </div>
+                        <div class="field-group">
+                            <label>Facebook URL</label>
+                            <input type="url" id="social-facebook" placeholder="https://www.facebook.com/profile.php?id=...">
+                        </div>
+                        <div class="field-group">
+                            <label>Feed ID Instagram <small style="font-weight:400;color:#888">(Behold.so — automático)</small></label>
+                            <input type="text" id="social-behold-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                            <p style="font-size:.8rem;color:#888;margin-top:.35rem;line-height:1.5">
+                                📸 Las publicaciones de Instagram aparecen automáticamente en el sitio. Conéctado con <strong>@umana.saludmental</strong> vía <a href="https://behold.so" target="_blank" rel="noopener" style="color:var(--green)">behold.so</a>.
+                            </p>
+                        </div>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('social')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('social')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-social">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- Branding & Logo -->
+                    <div class="content-section" id="cs-branding">
+                        <div class="section-header"><h3>Marca &amp; Logo</h3><p>Logotipo y datos de marca del sitio.</p></div>
+                        <div class="field-group">
+                            <label>URL del Logo (imagen)</label>
+                            <input type="text" id="branding-logo" placeholder="assets/images/logo.png?v=2">
+                            <div style="margin-top:.35rem;display:flex;align-items:center;gap:.6rem;">
+                                <input type="file" id="branding-logo-file" accept="image/*" onchange="handleSectionImageUpload(this,'branding-logo','branding-logo-preview')">
+                                <span id="branding-logo-upload-status" style="font-size:.78rem;color:#5D8064;display:none;">✓ Cargada</span>
+                            </div>
+                            <div id="branding-logo-preview" style="margin-top:.5rem;display:none;"><img style="max-height:60px;object-fit:contain;background:#f5f5f5;padding:6px;border-radius:6px;" alt="Preview logo"></div>
+                            <span class="field-hint">Recomendado: 240×70 px · PNG con fondo transparente · máx. 100 KB. Ruta relativa (assets/images/logo.png) o URL absoluta.</span>
+                        </div>
+                        <div class="field-group">
+                            <label>Nombre del Sitio</label>
+                            <input type="text" id="branding-name" placeholder="Umana">
+                        </div>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('branding')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('branding')">↩ Resetear</button>
+                            <span class="save-flash" id="sf-branding">✓ Guardado</span>
+                        </div>
+                    </div>
+
+                    <!-- Blog Preview section (inside view-site-content) -->
+                    <div class="content-section" id="cs-blogPreview">
+                        <div class="section-header"><h3>📰 Blog Preview (Página Principal)</h3><span class="save-flash" id="sf-blogPreview">✓ Guardado</span></div>
+                        <p class="field-hint" style="margin-bottom:1rem;">Controla el encabezado de la sección de blog en la página principal. Las tarjetas se llenan automáticamente con los artículos publicados en <strong>Blog / Artículos</strong>.</p>
+                        <div class="field-group"><label>Título de la sección</label><input type="text" id="bp-heading" placeholder="Recursos para tu Bienestar"></div>
+                        <div class="field-group"><label>Descripción / Subtítulo</label><textarea id="bp-intro" rows="2" placeholder="Artículos escritos por nuestros especialistas para acompañarte en tu camino."></textarea></div>
+                        <div class="content-save-bar">
+                            <button class="btn btn-primary" onclick="saveSiteSection('blogPreview')">💾 Guardar</button>
+                            <button class="btn btn-secondary" onclick="resetSiteSection('blogPreview')">↩ Resetear</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="cms-view" id="view-settings">
+                    <div class="settings-card">
+                        <h3>🔐 Cambiar Contraseña</h3>
+                        <div class="field-group"><label>Nueva contraseña</label><input type="password" id="new-pass" placeholder="Nueva contraseña"></div>
+                        <div class="field-group"><label>Confirmar</label><input type="password" id="confirm-pass" placeholder="Repetir contraseña"></div>
+                        <button class="btn btn-primary" onclick="changePassword()">Guardar (sesión actual)</button>
+                        <p id="pw-msg" style="margin-top:.65rem;font-size:.82rem;"></p>
+                    </div>
+                    <div class="settings-card">
+                        <h3>📦 Datos</h3>
+                        <p class="info-text">Los artículos y el contenido del sitio se guardan localmente. Exporta para hacer una copia de seguridad o migrar datos.</p>
+                        <div class="data-btns">
+                            <button class="btn btn-secondary" onclick="exportData()">⬇️ Exportar JSON</button>
+                            <button class="btn btn-secondary" onclick="importData()">⬆️ Importar JSON</button>
+                            <button class="btn btn-danger" onclick="clearAllData()">🗑️ Borrar todo</button>
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <h3>ℹ️ Información</h3>
+                        <p class="info-text">
+                            <strong>Blog Posts:</strong> Al publicar, el artículo se sube automáticamente a GitHub y queda indexable por Google.<br>
+                            <strong>Contenido del Sitio:</strong> Los cambios se aplican en tiempo real al abrir el sitio desde este navegador.
+                        </p>
+                    </div>
+                    <div class="settings-card" id="github-token-card">
+                        <h3>🔑 GitHub Token (publicación automática)</h3>
+                        <p class="info-text">Para que al publicar un artículo se suba automáticamente a GitHub (y Google lo indexe), añade un Personal Access Token. Se guarda solo en este navegador y solo se usa para subir archivos al repositorio.</p>
+                        <div class="field-group" style="margin-top:.75rem">
+                            <label>Personal Access Token (PAT)</label>
+                            <input type="password" id="gh-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+                        </div>
+                        <div class="field-group">
+                            <label>Repositorio (owner/repo)</label>
+                            <input type="text" id="gh-repo-input" placeholder="Umana-Salud-Mental/umana-salud-mental.github.io">
+                        </div>
+                        <div class="field-group">
+                            <label>Rama (branch) — <strong style="color:var(--green)">escribe exactamente: main</strong></label>
+                            <input type="text" id="gh-branch-input" placeholder="main" value="main">
+                        </div>
+                        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.85rem;align-items:center">
+                            <button class="btn btn-primary" onclick="saveGitHubToken()">💾 Guardar Token</button>
+                            <button class="btn btn-secondary" onclick="testGitHubToken()">🔌 Probar conexión</button>
+                            <button class="btn btn-danger" onclick="clearGitHubToken()">🗑️ Borrar Token</button>
+                            <span id="gh-token-status" style="font-size:.82rem;color:#888"></span>
+                        </div>
+                        <p class="info-text" style="margin-top:.85rem;font-size:.78rem;">
+                            Crea un PAT en <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener" style="color:var(--green)">github.com/settings/tokens</a> con permisos <code>repo</code> (o <code>contents:write</code> para Fine-Grained).
+                        </p>
+                        <div style="background:#fffbf0;border:1px solid #ffe08a;border-radius:8px;padding:.85rem 1rem;margin-top:.85rem;">
+                            <strong style="font-size:.84rem;color:#7a6000;">📋 Pasos para configurar (una sola vez):</strong>
+                            <ol style="font-size:.82rem;color:#7a6000;margin-top:.45rem;padding-left:1.2rem;line-height:1.7;">
+                                <li>Inicia sesión en GitHub con la cuenta <strong>Umana-Salud-Mental</strong></li>
+                                <li>Ve a <a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color:var(--green)">Settings → Developer Settings → Fine-grained tokens</a></li>
+                                <li>Clic en <strong>Generate new token</strong> | Nombre: <code>Umana Admin</code></li>
+                                <li>Repository access → Only selected → <strong>umana-salud-mental.github.io</strong></li>
+                                <li>Permissions → Contents: <strong>Read and write</strong></li>
+                                <li>Copia el token (<code>github_pat_...</code>) y pégalo arriba</li>
+                                <li>Deja el campo <strong>Rama</strong> en <code>main</code></li>
+                                <li>Clic en <strong>💾 Guardar Token</strong></li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <h3>🔍 SEO &amp; Google</h3>
+                        <p class="info-text">Con el token configurado, publicar un artículo lo sube automáticamente a GitHub. Cada artículo obtiene su propia URL estática indexable por Google.</p>
+                        <p class="info-text" style="margin-top:.5rem">La URL pública será: <code>https://umana-salud-mental.github.io/posts/post-[id].html</code></p>
+                        <div style="background:#f0f6f2;border-radius:8px;padding:.85rem 1rem;margin-top:.75rem;">
+                            <strong style="font-size:.84rem;color:#2d5a3d;">📋 ¿Qué hace "Publicar Sitemap en GitHub"?</strong>
+                            <p style="font-size:.82rem;color:#374151;margin-top:.35rem;line-height:1.6;">Sube un archivo <code>sitemap.xml</code> a tu repositorio. Google lee ese archivo automáticamente y encuentra todas las URLs de tus artículos.<br><br>
+                            <strong>Haz clic en este botón cada vez que publiques un artículo nuevo</strong>, para que Google lo encuentre más rápido (en 1–7 días).</p>
+                        </div>
+                        <div class="data-btns" style="margin-top:.85rem">
+                            <button class="btn btn-secondary" onclick="publishSitemapToGitHub()">🗺️ Publicar Sitemap en GitHub</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div><!-- /.cms-body -->
+        </div><!-- /.cms-main -->
+    </div><!-- /.cms-layout -->
+</div><!-- /#app -->
+
+<!-- POST EDITOR OVERLAY -->
+<div class="editor-overlay" id="editor-overlay">
+    <div class="editor-panel">
+        <div class="editor-header">
+            <h2 id="editor-heading">Nuevo artículo</h2>
+            <button class="btn-close" onclick="closeEditor()" title="Cerrar">×</button>
+        </div>
+        <div class="editor-body">
+            <div class="field-group">
+                <label>Título *</label>
+                <input type="text" id="f-title" placeholder="Título claro y atractivo..." oninput="updateReadingTime()">
+            </div>
+            <div class="field-row">
+                <div class="field-group">
+                    <label>Categoría</label>
+                    <select id="f-category">
+                        <option value="ansiedad">😰 Ansiedad</option>
+                        <option value="depresion">😔 Depresión</option>
+                        <option value="relaciones">💑 Relaciones</option>
+                        <option value="estres">😤 Estrés</option>
+                        <option value="autocuidado">🧘 Autocuidado</option>
+                        <option value="familia">👨‍👩‍👧‍👦 Familia</option>
+                        <option value="general" selected>📄 General</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Estado</label>
+                    <select id="f-status">
+                        <option value="draft">📝 Borrador</option>
+                        <option value="published">✅ Publicado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field-group">
+                <label>Extracto (máx. 160 caracteres)</label>
+                <textarea id="f-excerpt" rows="2" maxlength="160" placeholder="Breve descripción para el listado de artículos..."></textarea>
+            </div>
+            <div class="field-group">
+                <label>Imagen de portada (opcional)</label>
+                <input type="url" id="f-image" placeholder="https://imagen.com/foto.jpg" oninput="document.getElementById('f-image-file').value=''">
+                <span class="field-hint">Pega una URL de Unsplash, Pexels u otra fuente libre, <strong>o sube desde tu computadora:</strong></span>
+                <input type="file" id="f-image-file" accept="image/*" style="margin-top:.4rem;" onchange="handleImageUpload(this)">
+                <span id="f-image-upload-status" style="font-size:.78rem;color:#5D8064;display:none;">✓ Imagen cargada</span>
+            </div>
+            <div class="toggle-row">
+                <label class="toggle"><input type="checkbox" id="f-featured"><span class="toggle-slider"></span></label>
+                <label for="f-featured">Artículo destacado (aparece primero en /recursos)</label>
+            </div>
+            <div class="field-group">
+                <label>Contenido del artículo</label>
+                <div class="quill-wrapper"><div id="post-editor"></div></div>
+                <span class="reading-hint" id="reading-hint"></span>
+            </div>
+        </div>
+        <div class="editor-footer">
+            <button class="btn btn-primary" onclick="savePost()">💾 Guardar</button>
+            <button class="btn btn-secondary" onclick="closeEditor()">Cancelar</button>
+            <span class="save-flash" id="editor-flash">✓ Guardado</span>
+            <button class="btn btn-danger btn-sm" id="btn-del-post" onclick="deleteCurrentPost()" style="margin-left:auto;display:none;">🗑️ Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script>
+// ──────────────────────────────────────────────
+// CONFIG
+const _ak = [
+    '4176393f05820cf33ea1456bf915e3e25e5af580262b753b71bf0cf8faece629',
+    'e750eb88885f6ef870656b650205171279b5ca5a6b8caa661be548a7b33a020f'
+];
+const POSTS_KEY   = 'umana_blog_posts';
+const CONTENT_KEY = 'umana_site_content';
+const SESSION_KEY = 'umana_cms_session';
+
+const DEFAULTS = {
+    hero: { h1:'Tu salud mental importa', subtitle:'Terapia 100% online con profesionales certificados', desc:'En Umana, creemos que cuidar tu bienestar emocional es fundamental. Accede a terapia profesional, confidencial y personalizada desde cualquier lugar, cuando más lo necesitas.', cta:'Comienza tu viaje de bienestar', ctaLink:'#contacto' },
+    about: { heading:'Quiénes Somos', subheading:'Umana - Tu Plataforma de Salud Mental Online', p1:'Umana es una plataforma digital 100% online dedicada a hacer la salud mental accesible para todos. Conectamos a personas que buscan apoyo emocional con profesionales de salud mental certificados y con experiencia.', p2:'Nuestra misión es eliminar las barreras que impiden a las personas buscar ayuda. Ofrecemos sesiones online desde la comodidad de tu hogar, estamos aquí para acompañarte en cada paso de tu camino hacia el bienestar.' },
+    services: { heading:'Nuestros Servicios', intro:'Ofrecemos servicios 100% online de salud mental para apoyarte en lo que necesites', items:[{icon:'🧠',title:'Terapia Individual Online',desc:'Sesiones personalizadas para trabajar en ansiedad, depresión, estrés y otros desafíos emocionales.'},{icon:'👥',title:'Terapia de Pareja Online',desc:'Fortalece tu relación, mejora la comunicación y resuelve conflictos.'},{icon:'👨‍👩‍👧‍👦',title:'Terapia Familiar Online',desc:'Mejora la dinámica familiar y construye relaciones más saludables.'},{icon:'🎯',title:'Orientación Profesional Online',desc:'Descubre tu camino profesional y alcanza tus metas laborales.'}] },
+    howItWorks: { heading:'¿Cómo Funciona Umana?', steps:[{num:'01',title:'Agenda tu sesión',desc:'Contáctanos por WhatsApp o llena nuestro formulario. Rápido, fácil y sin compromiso.'},{num:'02',title:'Conoce a tu terapeuta',desc:'Te conectamos con el profesional más adecuado para tus necesidades y objetivos.'},{num:'03',title:'Comienza tu proceso',desc:'Sesiones 100% online desde la comodidad de tu hogar, a tu ritmo y horario.'}] },
+    testimonials: { heading:'Lo que dicen nuestros pacientes', items:[{quote:'Gracias a Umana pude dar el primer paso que tanto me costaba. Mi terapeuta me cambió la vida.',author:'María G.',location:'Quito',stars:5},{quote:'Nunca pensé que la terapia online funcionaría tan bien. Ahora me siento en control de mi ansiedad.',author:'Carlos M.',location:'Guayaquil',stars:5},{quote:'El proceso fue muy fácil desde el inicio. Encontré a la terapeuta perfecta para mí en poco tiempo.',author:'Sofía R.',location:'Cuenca',stars:5}] },
+    faq: { items:[{q:'¿Cómo funciona Umana?',a:'Umana conecta personas que buscan apoyo de salud mental con profesionales certificados. Agenda tu cita y comienza tu proceso terapéutico de manera sencilla y confidencial.'},{q:'¿Los terapeutas están certificados?',a:'Sí, todos nuestros profesionales están debidamente certificados y cuentan con licencia para ejercer.'},{q:'¿Cuánto cuesta una sesión?',a:'Los costos varían según el tipo de servicio. Contáctanos para conocer nuestras tarifas actuales.'},{q:'¿Es confidencial mi información?',a:'Absolutamente. Tu privacidad es nuestra prioridad. Toda la información está protegida por las leyes de privacidad y secreto profesional.'},{q:'¿Puedo cambiar de terapeuta?',a:'Sí, puedes solicitar un cambio en cualquier momento sin ningún problema.'},{q:'¿Qué necesito para una sesión online?',a:'Solo necesitas conexión a internet, un dispositivo con cámara y micrófono, y un espacio privado.'}] },
+    schedule: { days1:'Lunes - Viernes', hours1:'8:00 AM - 5:00 PM', days2:'Sábados', hours2:'9:00 AM - 12:00 PM', note:'* Agenda tu cita con anticipación. Horarios sujetos a disponibilidad.' },
+    contact: { email:'hey.umana@outlook.com', phone:'+593 983404824', address:'Quito, Ecuador', wa:'593983404824' },
+    trust: { items:[{num:'500+',label:'Pacientes atendidos'},{num:'30+',label:'Terapeutas certificados'},{num:'98%',label:'Tasa de satisfacción'},{num:'100%',label:'Online y confidencial'}] },
+    social: { tiktok:'https://www.tiktok.com/@umanaterapiaonline?lang=es-419', instagram:'https://www.instagram.com/umana.saludmental/', facebook:'https://www.facebook.com/profile.php?id=61584479810534', beholdFeedId:'mig5lKXMAg1A9HsRL670' },
+    branding: { logoUrl:'assets/images/logo.png?v=2', siteName:'Umana' },
+    blogPreview: { heading:'Recursos para tu Bienestar', intro:'Artículos escritos por nuestros especialistas para acompañarte en tu camino.' }
+};
+
+const CAT_LABELS = { ansiedad:'😰 Ansiedad', depresion:'😔 Depresión', relaciones:'💑 Relaciones', estres:'😤 Estrés', autocuidado:'🧘 Autocuidado', familia:'👨‍👩‍👧‍👦 Familia', general:'📄 General' };
+
+let posts = [], siteContent = {}, editId = null, quill = null;
+
+// ── Storage ──
+const loadPosts    = () => { try { return JSON.parse(localStorage.getItem(POSTS_KEY)) || []; } catch { return []; } };
+const savePosts    = () => localStorage.setItem(POSTS_KEY, JSON.stringify(posts));
+const loadContent  = () => { try { return JSON.parse(localStorage.getItem(CONTENT_KEY)) || {}; } catch { return {}; } };
+const saveContent  = () => localStorage.setItem(CONTENT_KEY, JSON.stringify(siteContent));
+
+// ── Auth ──
+const isLogged = () => sessionStorage.getItem(SESSION_KEY) === 'ok';
+const doLogout = () => { sessionStorage.removeItem(SESSION_KEY); location.reload(); };
+
+async function _h(s) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+document.getElementById('login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value;
+    const [uh, ph] = await Promise.all([_h(u), _h(p)]);
+    if (uh === _ak[0] && ph === _ak[1]) {
+        sessionStorage.setItem(SESSION_KEY, 'ok'); bootApp();
+    } else {
+        const el = document.getElementById('login-error');
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 3000);
+    }
+});
+document.getElementById('btn-logout').addEventListener('click', doLogout);
+
+// ── Navigation ──
+const VIEW_NAMES = { dashboard:'Dashboard', posts:'Blog / Artículos', 'site-content':'Contenido del Sitio', settings:'Configuración' };
+
+function switchView(id) {
+    document.querySelectorAll('.cms-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const el = document.getElementById('view-' + id);
+    if (el) el.classList.add('active');
+    const nav = document.querySelector(`[data-view="${id}"]`);
+    if (nav) nav.classList.add('active');
+    document.getElementById('topbar-title').textContent = VIEW_NAMES[id] || id;
+    if (id === 'dashboard')    refreshDashboard();
+    if (id === 'posts')        renderPostList();
+    if (id === 'site-content') loadSiteContentForms();
+    if (id === 'settings')     loadGitHubTokenForm();
+}
+
+function goTo(view, action) {
+    switchView(view);
+    setTimeout(() => {
+        if (action === 'openNewPost') openNewPost();
+        else openContentTab(action);
+    }, 80);
+}
+
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => switchView(item.dataset.view));
+});
+
+// ── Dashboard ──
+function refreshDashboard() {
+    document.getElementById('stat-total').textContent     = posts.length;
+    document.getElementById('stat-published').textContent = posts.filter(p => p.status === 'published').length;
+    document.getElementById('stat-drafts').textContent    = posts.filter(p => p.status === 'draft').length;
+    document.getElementById('stat-featured').textContent  = posts.filter(p => p.featured).length;
+    const recent = [...posts].sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0,5);
+    const el = document.getElementById('recent-posts-list');
+    if (!recent.length) { el.innerHTML = '<p style="color:#ccc;font-size:.86rem;">Sin artículos todavía.</p>'; return; }
+    el.innerHTML = '';
+    recent.forEach(p => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid #f5f5f5;cursor:pointer;';
+        row.dataset.postId = p.id;
+        const left = document.createElement('div');
+        const title = document.createElement('div'); title.style.cssText = 'font-size:.86rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;'; title.textContent = p.title || '(sin título)';
+        const meta  = document.createElement('div'); meta.style.cssText = 'font-size:.73rem;color:#bbb;'; meta.textContent = (CAT_LABELS[p.category]||p.category) + ' · ' + fmtDate(p.updatedAt);
+        left.appendChild(title); left.appendChild(meta);
+        const badge = document.createElement('span'); badge.className = 'badge badge-' + p.status; badge.textContent = p.status==='published'?'Pub.':'Bor.';
+        row.appendChild(left); row.appendChild(badge);
+        row.addEventListener('click', function() { goTo('posts', null); setTimeout(function(){ openEditPost(row.dataset.postId); }, 100); });
+        el.appendChild(row);
+    });
+}
+
+// ── Posts List ──
+function renderPostList() {
+    const search = (document.getElementById('search-posts').value||'').toLowerCase();
+    const cat    = document.getElementById('filter-category').value;
+    const status = document.getElementById('filter-status').value;
+    let list = posts.filter(p => {
+        if (cat    && p.category !== cat)    return false;
+        if (status && p.status   !== status) return false;
+        if (search && !(p.title+' '+p.excerpt).toLowerCase().includes(search)) return false;
+        return true;
+    }).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    const tbody = document.getElementById('posts-tbody');
+    tbody.innerHTML = '';
+    if (!list.length) {
+        const tr = document.createElement('tr'); tr.className = 'empty-row';
+        const td = document.createElement('td'); td.colSpan = 5; td.textContent = 'No hay artículos que coincidan.';
+        tr.appendChild(td); tbody.appendChild(tr);
+        return;
+    }
+    list.forEach(p => {
+        const tr = document.createElement('tr');
+        // Title cell
+        const tdTitle = document.createElement('td'); tdTitle.className = 'post-title-cell';
+        const titleSpan = document.createElement('span'); titleSpan.textContent = p.title || '(sin título)';
+        tdTitle.appendChild(titleSpan);
+        if (p.featured) { const star = document.createElement('span'); star.className='badge'; star.style.cssText='background:#fff3cd;color:#856404;margin-left:.3rem;'; star.textContent='⭐'; tdTitle.appendChild(star); }
+        const exPrev = document.createElement('div'); exPrev.className = 'post-excerpt-prev'; exPrev.textContent = p.excerpt || '';
+        tdTitle.appendChild(exPrev);
+        // Category
+        const tdCat = document.createElement('td'); const catBadge = document.createElement('span'); catBadge.className = 'badge badge-category'; catBadge.textContent = CAT_LABELS[p.category]||p.category; tdCat.appendChild(catBadge);
+        // Status
+        const tdSt = document.createElement('td'); const stBadge = document.createElement('span'); stBadge.className = 'badge badge-' + p.status; stBadge.textContent = p.status==='published'?'Publicado':'Borrador'; tdSt.appendChild(stBadge);
+        // Date
+        const tdDate = document.createElement('td'); tdDate.style.cssText='color:#bbb;font-size:.8rem;'; tdDate.textContent = fmtDate(p.updatedAt);
+        // Actions
+        const tdAct = document.createElement('td');
+        const actDiv = document.createElement('div'); actDiv.className = 'post-actions';
+        const editBtn = document.createElement('button'); editBtn.className = 'btn btn-secondary btn-sm'; editBtn.textContent = '✏️'; editBtn.dataset.postId = p.id;
+        editBtn.addEventListener('click', function() { openEditPost(this.dataset.postId); });
+        const delBtn = document.createElement('button'); delBtn.className = 'btn btn-danger btn-sm'; delBtn.textContent = '🗑️'; delBtn.dataset.postId = p.id;
+        delBtn.addEventListener('click', function() { confirmDel(this.dataset.postId); });
+        if (p.status === 'published') {
+            const expBtn = document.createElement('button'); expBtn.className = 'btn btn-secondary btn-sm'; expBtn.title = 'Exportar página estática (SEO/Google)'; expBtn.textContent = '📥'; expBtn.dataset.postId = p.id;
+            expBtn.addEventListener('click', function() { generateStaticPost(this.dataset.postId); });
+            actDiv.appendChild(expBtn);
+        }
+        actDiv.appendChild(editBtn); actDiv.appendChild(delBtn); tdAct.appendChild(actDiv);
+        tr.appendChild(tdTitle); tr.appendChild(tdCat); tr.appendChild(tdSt); tr.appendChild(tdDate); tr.appendChild(tdAct);
+        tbody.appendChild(tr);
+    });
+}
+
+// ── Post Editor ──
+function clearImageUpload() {
+    const fi = document.getElementById('f-image-file');
+    const st = document.getElementById('f-image-upload-status');
+    if (fi) fi.value = '';
+    if (st) st.style.display = 'none';
+}
+function handleImageUpload(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('f-image').value = e.target.result;
+        document.getElementById('f-image-upload-status').style.display = 'inline';
+    };
+    reader.readAsDataURL(file);
+}
+
+/* Generic image upload handler for site-content sections.
+   targetEl  – either an element or a string (element id) receiving the data-URL
+   previewEl – either an element or a string (element id) of the preview wrapper */
+function handleSectionImageUpload(input, targetEl, previewEl) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    // Resolve elements (accept both DOM nodes and string IDs)
+    const tgt     = typeof targetEl  === 'string' ? document.getElementById(targetEl)  : targetEl;
+    const preview = typeof previewEl === 'string' ? document.getElementById(previewEl) : previewEl;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (tgt) tgt.value = e.target.result;
+        if (preview) {
+            const img = preview.querySelector('img');
+            if (img) img.src = e.target.result;
+            preview.style.display = '';
+        }
+        // Show nearest status badge if any
+        const statusBadge = input.parentElement && input.parentElement.querySelector('[id$="-upload-status"],[id$="-status"]');
+        if (statusBadge) { statusBadge.style.display = 'inline'; }
+    };
+    reader.readAsDataURL(file);
+}
+function openNewPost() {
+    editId = null;
+    document.getElementById('editor-heading').textContent = 'Nuevo artículo';
+    document.getElementById('btn-del-post').style.display = 'none';
+    ['f-title','f-excerpt','f-image'].forEach(id => document.getElementById(id).value = '');
+    clearImageUpload();
+    document.getElementById('f-category').value = 'general';
+    document.getElementById('f-status').value = 'draft';
+    document.getElementById('f-featured').checked = false;
+    document.getElementById('reading-hint').textContent = '';
+    if (quill) quill.setContents([]);
+    document.getElementById('editor-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('f-title').focus(), 100);
+}
+
+function openEditPost(id) {
+    const p = posts.find(x => x.id === id);
+    if (!p) return;
+    editId = id;
+    document.getElementById('editor-heading').textContent = 'Editar artículo';
+    document.getElementById('btn-del-post').style.display = 'inline-flex';
+    document.getElementById('f-title').value    = p.title   || '';
+    document.getElementById('f-category').value = p.category|| 'general';
+    document.getElementById('f-status').value   = p.status  || 'draft';
+    document.getElementById('f-excerpt').value  = p.excerpt || '';
+    document.getElementById('f-image').value    = p.image   || '';
+    clearImageUpload();
+    document.getElementById('f-featured').checked = !!p.featured;
+    if (quill) quill.root.innerHTML = p.content || '';
+    updateReadingTime();
+    document.getElementById('editor-overlay').classList.add('open');
+}
+
+function closeEditor() { document.getElementById('editor-overlay').classList.remove('open'); editId = null; }
+
+function savePost() {
+    const now = new Date().toISOString();
+    const prevStatus = editId ? (posts.find(p => p.id === editId) || {}).status : null;
+    const data = {
+        title:    document.getElementById('f-title').value.trim(),
+        category: document.getElementById('f-category').value,
+        status:   document.getElementById('f-status').value,
+        excerpt:  document.getElementById('f-excerpt').value.trim(),
+        image:    document.getElementById('f-image').value.trim(),
+        featured: document.getElementById('f-featured').checked,
+        content:  quill ? quill.root.innerHTML : '',
+        updatedAt: now
+    };
+    let postId;
+    if (editId) {
+        const idx = posts.findIndex(p => p.id === editId);
+        if (idx !== -1) { Object.assign(posts[idx], data); postId = posts[idx].id; }
+    } else {
+        const newPost = { id: uid(), createdAt: now, ...data };
+        posts.unshift(newPost); postId = newPost.id;
+    }
+    savePosts(); renderPostList(); refreshDashboard();
+    flash('editor-flash');
+
+    // Auto-publish to GitHub when status is published
+    if (data.status === 'published' && postId) {
+        autoPublishPost(postId);
+    }
+}
+
+function confirmDel(id) {
+    const p = posts.find(x => x.id === id);
+    if (confirm(`¿Eliminar "${p?.title||'este artículo'}"?`)) {
+        const staticPath = p?.staticUrl ? p.staticUrl.replace(/^\//, '') : null;
+        posts = posts.filter(x => x.id !== id); savePosts();
+        if (editId === id) closeEditor();
+        renderPostList(); refreshDashboard();
+        // Delete static file + update sitemap on GitHub if token is set
+        if (staticPath && getGHConfig().token) {
+            (async () => {
+                try {
+                    await ghDeleteFile(staticPath, `blog: delete "${p?.title||id}"`);
+                    await ghPutFile('sitemap.xml', buildSitemapXml(), `seo: remove "${p?.title||id}" from sitemap`);
+                } catch(e) {
+                    console.warn('GitHub delete failed:', e.message);
+                }
+            })();
+        }
+    }
+}
+function deleteCurrentPost() { if (editId) confirmDel(editId); }
+
+function updateReadingTime() {
+    const words = (document.getElementById('f-title').value + ' ' + (quill ? quill.getText() : '')).split(/\s+/).filter(Boolean).length;
+    const mins = Math.max(1, Math.round(words/200));
+    document.getElementById('reading-hint').textContent = words > 5 ? `⏱️ ~${mins} min de lectura (${words} palabras)` : '';
+}
+
+// ── Site Content ──
+function openContentTab(s) {
+    document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.content-section').forEach(x => x.classList.remove('active'));
+    const tab = document.querySelector(`[data-section="${s}"]`);
+    const sec = document.getElementById(`cs-${s}`);
+    if (tab) tab.classList.add('active');
+    if (sec) sec.classList.add('active');
+}
+document.querySelectorAll('.content-tab').forEach(t => t.addEventListener('click', () => openContentTab(t.dataset.section)));
+
+function getSection(s) { return Object.assign({}, DEFAULTS[s]||{}, siteContent[s]||{}); }
+
+function loadSiteContentForms() {
+    const h = getSection('hero');
+    document.getElementById('hero-h1').value       = h.h1||'';
+    document.getElementById('hero-subtitle').value = h.subtitle||'';
+    document.getElementById('hero-desc').value     = h.desc||'';
+    document.getElementById('hero-cta').value      = h.cta||'';
+    document.getElementById('hero-cta-link').value = h.ctaLink||'';
+    document.getElementById('hero-bg-image').value = h.bgImage||'';
+    if (h.bgImage) { const pw = document.getElementById('hero-bg-preview'); if(pw){ const pi = pw.querySelector('img'); if(pi) pi.src=h.bgImage; pw.style.display=''; } }
+
+    const ab = getSection('about');
+    document.getElementById('about-heading').value    = ab.heading||'';
+    document.getElementById('about-subheading').value = ab.subheading||'';
+    document.getElementById('about-p1').value         = ab.p1||'';
+    document.getElementById('about-p2').value         = ab.p2||'';
+    document.getElementById('about-image').value      = ab.image||'';
+    if (ab.image) { const pw = document.getElementById('about-image-preview'); if(pw){ const pi = pw.querySelector('img'); if(pi) pi.src=ab.image; pw.style.display=''; } }
+    const sv = getSection('services');
+    document.getElementById('services-heading').value = sv.heading||'';
+    document.getElementById('services-intro').value   = sv.intro||'';
+    renderServiceItems(sv.items||[]);
+
+    const hw = getSection('howItWorks');
+    document.getElementById('how-heading').value = hw.heading||'';
+    renderHowSteps(hw.steps||[]);
+
+    const tm = getSection('testimonials');
+    document.getElementById('test-heading').value = tm.heading||'';
+    renderTestimonials(tm.items||[]);
+
+    renderFaqItems(getSection('faq').items||[]);
+
+    const sc = getSection('schedule');
+    document.getElementById('sch-days1').value  = sc.days1||'';
+    document.getElementById('sch-hours1').value = sc.hours1||'';
+    document.getElementById('sch-days2').value  = sc.days2||'';
+    document.getElementById('sch-hours2').value = sc.hours2||'';
+    document.getElementById('sch-note').value   = sc.note||'';
+
+    const ct = getSection('contact');
+    document.getElementById('contact-email').value   = ct.email||'';
+    document.getElementById('contact-phone').value   = ct.phone||'';
+    document.getElementById('contact-address').value = ct.address||'';
+    document.getElementById('contact-wa').value      = ct.wa||'';
+
+    // Trust stats
+    renderTrustItems(getSection('trust').items||[]);
+
+    // Social media
+    const so = getSection('social');
+    document.getElementById('social-tiktok').value    = so.tiktok    || '';
+    document.getElementById('social-instagram').value = so.instagram || '';
+    document.getElementById('social-facebook').value  = so.facebook  || '';
+    document.getElementById('social-behold-id').value = so.beholdFeedId || '';
+
+    // Branding
+    const br = getSection('branding');
+    document.getElementById('branding-logo').value = br.logoUrl  || '';
+    document.getElementById('branding-name').value = br.siteName || '';
+    if (br.logoUrl) { const pw = document.getElementById('branding-logo-preview'); if(pw){ const pi = pw.querySelector('img'); if(pi) pi.src=br.logoUrl; pw.style.display=''; } }
+
+    // Blog Preview section
+    const bpSec = getSection('blogPreview');
+    document.getElementById('bp-heading').value = bpSec.heading || '';
+    document.getElementById('bp-intro').value   = bpSec.intro   || '';
+}
+
+function saveSiteSection(s) {
+    let data = {};
+    if (s === 'hero')     data = { h1:v('hero-h1'), subtitle:v('hero-subtitle'), desc:v('hero-desc'), cta:v('hero-cta'), ctaLink:v('hero-cta-link'), bgImage:v('hero-bg-image') };
+    if (s === 'about')    data = { heading:v('about-heading'), subheading:v('about-subheading'), p1:v('about-p1'), p2:v('about-p2'), image:v('about-image') };
+    if (s === 'services') {
+        const items = [];
+        document.querySelectorAll('#services-items .repeatable-item').forEach(el => items.push({ icon:el.querySelector('.si-icon').value, title:el.querySelector('.si-title').value, desc:el.querySelector('.si-desc').value }));
+        data = { heading:v('services-heading'), intro:v('services-intro'), items };
+    }
+    if (s === 'howItWorks') {
+        const steps = [];
+        document.querySelectorAll('#how-steps-items .repeatable-item').forEach(el => steps.push({ num:el.querySelector('.hw-num').value, title:el.querySelector('.hw-title').value, desc:el.querySelector('.hw-desc').value }));
+        data = { heading:v('how-heading'), steps };
+    }
+    if (s === 'testimonials') {
+        const items = [];
+        document.querySelectorAll('#testimonials-items .repeatable-item').forEach(el => items.push({ quote:el.querySelector('.tm-quote').value, author:el.querySelector('.tm-author').value, location:el.querySelector('.tm-loc').value, stars:parseInt(el.querySelector('.tm-stars').value)||5, avatar:el.querySelector('.tm-avatar') ? el.querySelector('.tm-avatar').value : '' }));
+        data = { heading:v('test-heading'), items };
+    }
+    if (s === 'faq') {
+        const items = [];
+        document.querySelectorAll('#faq-items .repeatable-item').forEach(el => items.push({ q:el.querySelector('.faq-q').value, a:el.querySelector('.faq-a').value }));
+        data = { items };
+    }
+    if (s === 'schedule') data = { days1:v('sch-days1'), hours1:v('sch-hours1'), days2:v('sch-days2'), hours2:v('sch-hours2'), note:v('sch-note') };
+    if (s === 'contact')  data = { email:v('contact-email'), phone:v('contact-phone'), address:v('contact-address'), wa:v('contact-wa') };
+    if (s === 'trust') {
+        const items = [];
+        document.querySelectorAll('#trust-items .repeatable-item').forEach(el => items.push({ num:el.querySelector('.tr-num').value, label:el.querySelector('.tr-label').value }));
+        data = { items };
+    }
+    if (s === 'social') data = { tiktok:v('social-tiktok'), instagram:v('social-instagram'), facebook:v('social-facebook'), beholdFeedId:v('social-behold-id') };
+    if (s === 'branding') data = { logoUrl:v('branding-logo'), siteName:v('branding-name') };
+    if (s === 'blogPreview') data = { heading:v('bp-heading'), intro:v('bp-intro') };
+    siteContent[s] = data; saveContent(); flash('sf-'+s);
+    pushSiteContentToGitHub();
+}
+
+function resetSiteSection(s) {
+    if (!confirm(`¿Resetear "${s}" a los valores originales del sitio?`)) return;
+    delete siteContent[s]; saveContent(); loadSiteContentForms();
+}
+
+// Repeatable renderers
+function renderServiceItems(items) {
+    document.getElementById('services-items').innerHTML = items.map((it,i) => `
+        <div class="repeatable-item">
+            <div class="item-header"><span class="item-label">Servicio ${i+1}</span><button class="btn btn-danger btn-sm" onclick="this.closest('.repeatable-item').remove()">✕</button></div>
+            <div class="field-row">
+                <div class="field-group" style="flex:0 0 70px"><label>Icono</label><input class="si-icon" type="text" value="${esc(it.icon||'')}" placeholder="🧠"></div>
+                <div class="field-group"><label>Título</label><input class="si-title" type="text" value="${esc(it.title||'')}" placeholder="Nombre del servicio"></div>
+            </div>
+            <div class="field-group"><label>Descripción</label><textarea class="si-desc" rows="2">${esc(it.desc||'')}</textarea></div>
+        </div>`).join('');
+}
+function addServiceItem() {
+    const n = document.querySelectorAll('#services-items .repeatable-item').length + 1;
+    document.getElementById('services-items').insertAdjacentHTML('beforeend', `
+        <div class="repeatable-item">
+            <div class="item-header"><span class="item-label">Servicio ${n}</span><button class="btn btn-danger btn-sm" onclick="this.closest('.repeatable-item').remove()">✕</button></div>
+            <div class="field-row">
+                <div class="field-group" style="flex:0 0 70px"><label>Icono</label><input class="si-icon" type="text" value="" placeholder="🎯"></div>
+                <div class="field-group"><label>Título</label><input class="si-title" type="text" value="" placeholder="Nombre del servicio"></div>
+            </div>
+            <div class="field-group"><label>Descripción</label><textarea class="si-desc" rows="2" placeholder="Descripción..."></textarea></div>
+        </div>`);
+}
+function renderHowSteps(steps) {
+    document.getElementById('how-steps-items').innerHTML = steps.map((s,i) => `
+        <div class="repeatable-item">
+            <div class="item-header"><span class="item-label">Paso ${i+1}</span><button class="btn btn-danger btn-sm" onclick="this.closest('.repeatable-item').remove()">✕</button></div>
+            <div class="field-row">
+                <div class="field-group" style="flex:0 0 55px"><label>Nro.</label><input class="hw-num" type="text" value="${esc(s.num||'')}" placeholder="01"></div>
+                <div class="field-group"><label>Título</label><input class="hw-title" type="text" value="${esc(s.title||'')}" placeholder="Título del paso"></div>
+            </div>
+            <div class="field-group"><label>Descripción</label><textarea class="hw-desc" rows="2">${esc(s.desc||'')}</textarea></div>
+        </div>`).join('');
+}
+function addHowStep() {
+    const n = document.querySelectorAll('#how-steps-items .repeatable-item').length + 1;
+    document.getElementById('how-steps-items').insertAdjacentHTML('beforeend', `
+        <div class="repeatable-item">
+            <div class="item-header"><span class="item-label">Paso ${n}</span><button class="btn btn-danger btn-sm" onclick="this.closest('.repeatable-item').remove()">✕</button></div>
+            <div class="field-row">
+                <div class="field-group" style="flex:0 0 55px"><label>Nro.</label><input class="hw-num" type="text" value="0${n}" placeholder="01"></div>
+                <div class="field-group"><label>Título</label><input class="hw-title" type="text" value="" placeholder="Título"></div>
+            </div>
+            <div class="field-group"><label>Descripción</label><textarea class="hw-desc" rows="2" placeholder="Descripción..."></textarea></div>
+        </div>`);
+}
+function renderTestimonials(items) {
+    document.getElementById('testimonials-items').innerHTML = items.map((t,i) => `
+        <div class="repeatable-item">
+            <div class="item-header"><span class="item-label">Testimonio ${i+1}</span><button class="btn btn-danger btn-sm" onclick="this.closest('.repeatable-item').remove()">✕</button></div>
+            <div class="field-group"><label>Cita / Testimonio</label><textarea class="tm-quote" rows="3">${esc(t.quote||'')}</textarea></div>
+            <div class="field-row">
+                <div class="field-group"><label>Nombre (puede ser anónimo)</label><input class="tm-author" type="text" value="${esc(t.author||'')}" placeholder="María G."></div>
+                <div class="field-group"><label>Ciudad</label><input class="tm-loc" type="text" value="${esc(t.location||'')}" placeholder="Quito"></div>
+                <div class="field-group" style="flex:0 0 80px"><label>Estrellas</label><input class="tm-stars" type="number" min="1" max="5" value="${t.stars||5}"></div>
+            </div>
+            <div class="field-group">
+                <label>Avatar / foto (opcional)</label>
+                <input class="tm-avatar" type="url" value="${esc(t.avatar||'')}" placeholder="https://imagen.com/foto.jpg">
+                <div style="margin-top:.3rem;display:flex;align-items:center;gap:.5rem;">
+                    <input type="file" accept="image/*" onchange="handleSectionImageUpload(this,this.closest('.repeatable-item').querySelector('.tm-avatar'),this.closest('.repeatable-item').querySelector('.tm-avatar-preview'))">
+                </div>
+                <div class="tm-avatar-preview" style="${t.avatar?'':'display:none;'}margin-top:.35rem;"><img src="${esc(t.avatar||'')}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;" alt="Avatar"></div>
+                <span class="field-hint">80×80 px · JPG/PNG · máx. 50 KB. Circular.</span>
+            </div>
+        </div>`).join('');
+}
+function addTestimonial() {
+    const n = document.querySelectorAll('#testimonials-items .repeatable-item').length + 1;
+    document.getElementById('testimonials-items').insertAdjacentHTML('beforeend', `
+        <div class="repeatable-item">
+            <div class="item-header"><span class="item-label">Testimonio ${n}</span><button class="btn btn-danger btn-sm" onclick="this.closest('.repeatable-item').remove()">✕</button></div>
+            <div class="field-group"><label>Cita</label><textarea class="tm-quote" rows="3" placeholder="Texto del testimonio..."></textarea></div>
+            <div class="field-row">
+                <div class="field-group"><label>Nombre</label><input class="tm-author" type="text" value="" placeholder="Ana P."></div>
+                <div class="field-group"><label>Ciudad</label><input class="tm-loc" type="text" value="" placeholder="Quito"></div>
+                <div class="field-group" style="flex:0 0 80px"><label>Estrellas</label><input class="tm-stars" type="number" min="1" max="5" value="5"></div>
+            </div>
+            <div class="field-group">
+                <label>Avatar / foto (opcional)</label>
+                <input class="tm-avatar" type="url" value="" placeholder="https://imagen.com/foto.jpg">
+                <div style="margin-top:.3rem;display:flex;align-items:center;gap:.5rem;">
+                    <input type="file" accept="image/*" onchange="handleSectionImageUpload(this,this.closest('.repeatable-item').querySelector('.tm-avatar'),this.closest('.repeatable-item').querySelector('.tm-avatar-preview'))">
+                </div>
+                <div class="tm-avatar-preview" style="display:none;margin-top:.35rem;"><img src="" style="width:60px;height:60px;border-radius:50%;object-fit:cover;" alt="Avatar"></div>
+                <span class="field-hint">80×80 px · JPG/PNG · máx. 50 KB. Circular.</span>
+            </div>
+        </div>`);
+}
+function renderFaqItems(items) {
+    document.getElementById('faq-items').innerHTML = items.map((it,i) => `
+        <div class="repeatable-item">
+            <div class="item-header"><span class="item-label">Pregunta ${i+1}</span><button class="btn btn-danger btn-sm" onclick="this.closest('.repeatable-item').remove()">✕</button></div>
+            <div class="field-group"><label>Pregunta</label><input class="faq-q" type="text" value="${esc(it.q||'')}" placeholder="¿Cómo funciona?"></div>
+            <div class="field-group"><label>Respuesta</label><textarea class="faq-a" rows="3">${esc(it.a||'')}</textarea></div>
+        </div>`).join('');
+}
+function addFaqItem() {
+    const n = document.querySelectorAll('#faq-items .repeatable-item').length + 1;
+    document.getElementById('faq-items').insertAdjacentHTML('beforeend', `
+        <div class="repeatable-item">
+            <div class="item-header"><span class="item-label">Pregunta ${n}</span><button class="btn btn-danger btn-sm" onclick="this.closest('.repeatable-item').remove()">✕</button></div>
+            <div class="field-group"><label>Pregunta</label><input class="faq-q" type="text" value="" placeholder="¿...?"></div>
+            <div class="field-group"><label>Respuesta</label><textarea class="faq-a" rows="3" placeholder="Respuesta..."></textarea></div>
+        </div>`);
+}
+
+function renderTrustItems(items) {
+    document.getElementById('trust-items').innerHTML = items.map((it,i) => `
+        <div class="repeatable-item">
+            <div class="item-header"><span class="item-label">Estadística ${i+1}</span><button class="btn btn-danger btn-sm" onclick="this.closest('.repeatable-item').remove()">✕</button></div>
+            <div class="field-row">
+                <div class="field-group" style="flex:0 0 110px"><label>Número / Valor</label><input class="tr-num" type="text" value="${esc(it.num||'')}" placeholder="500+"></div>
+                <div class="field-group"><label>Etiqueta</label><input class="tr-label" type="text" value="${esc(it.label||'')}" placeholder="Pacientes atendidos"></div>
+            </div>
+        </div>`).join('');
+}
+function addTrustItem() {
+    const n = document.querySelectorAll('#trust-items .repeatable-item').length + 1;
+    document.getElementById('trust-items').insertAdjacentHTML('beforeend', `
+        <div class="repeatable-item">
+            <div class="item-header"><span class="item-label">Estadística ${n}</span><button class="btn btn-danger btn-sm" onclick="this.closest('.repeatable-item').remove()">✕</button></div>
+            <div class="field-row">
+                <div class="field-group" style="flex:0 0 110px"><label>Número / Valor</label><input class="tr-num" type="text" value="" placeholder="500+"></div>
+                <div class="field-group"><label>Etiqueta</label><input class="tr-label" type="text" value="" placeholder="Descripción..."></div>
+            </div>
+        </div>`);
+}
+
+// ── Settings ──
+async function changePassword() {
+    const np = document.getElementById('new-pass').value;
+    const cp = document.getElementById('confirm-pass').value;
+    const msg = document.getElementById('pw-msg');
+    if (!np) { msg.style.color='red'; msg.textContent='Ingresa una contraseña.'; return; }
+    if (np !== cp) { msg.style.color='red'; msg.textContent='Las contraseñas no coinciden.'; return; }
+    _ak[1] = await _h(np);
+    msg.style.color='green'; msg.textContent='✓ Contraseña actualizada para esta sesión.';
+}
+function exportData() {
+    const blob = new Blob([JSON.stringify({posts, siteContent, exportDate: new Date().toISOString()}, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'umana-cms-data.json'; a.click();
+    URL.revokeObjectURL(a.href);
+}
+function importData() {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json';
+    input.onchange = e => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            try {
+                const d = JSON.parse(ev.target.result);
+                if (d.posts) { posts = d.posts; savePosts(); }
+                if (d.siteContent) { siteContent = d.siteContent; saveContent(); }
+                alert('✓ Importado correctamente.'); refreshDashboard();
+            } catch { alert('Archivo JSON inválido.'); }
+        };
+        r.readAsText(f);
+    };
+    input.click();
+}
+function clearAllData() {
+    if (!confirm('¿Borrar TODOS los datos? No se puede deshacer.')) return;
+    localStorage.removeItem(POSTS_KEY); localStorage.removeItem(CONTENT_KEY);
+    posts = []; siteContent = {}; refreshDashboard(); alert('✓ Datos borrados.');
+}
+
+// ── Utilities ──
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const v   = id => document.getElementById(id)?.value || '';
+const fmtDate = iso => { if (!iso) return ''; return new Date(iso).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}); };
+function flash(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = 'flex';
+    setTimeout(() => el.style.display = 'none', 2200);
+}
+
+// ── Quill ──
+function initQuill() {
+    if (typeof Quill === 'undefined') return;
+    quill = new Quill('#post-editor', {
+        theme: 'snow',
+        placeholder: 'Escribe el contenido del artículo aquí...',
+        modules: { toolbar: [
+            [{ header: [2,3,4,false] }],
+            ['bold','italic','underline','strike'],
+            [{ color:[] },{ background:[] }],
+            [{ list:'ordered' },{ list:'bullet' }],
+            [{ align:[] }],
+            ['blockquote','code-block','link'],
+            ['clean']
+        ]}
+    });
+    quill.on('text-change', updateReadingTime);
+}
+
+// ── Boot ──
+// ── GitHub API auto-publish ──────────────────────────────────────
+const GH_TOKEN_KEY  = 'umana_gh_token';
+const GH_REPO_KEY   = 'umana_gh_repo';
+const GH_BRANCH_KEY = 'umana_gh_branch';
+
+function getGHConfig() {
+    return {
+        token:  localStorage.getItem(GH_TOKEN_KEY)  || '',
+        repo:   localStorage.getItem(GH_REPO_KEY)   || 'Umana-Salud-Mental/umana-salud-mental.github.io',
+        branch: localStorage.getItem(GH_BRANCH_KEY) || 'main'
+    };
+}
+
+function saveGitHubToken() {
+    const t = document.getElementById('gh-token-input').value.trim();
+    const r = document.getElementById('gh-repo-input').value.trim();
+    const b = document.getElementById('gh-branch-input').value.trim();
+    if (!t) { setGHStatus('⚠️ Introduce un token', 'orange'); return; }
+    localStorage.setItem(GH_TOKEN_KEY,  t);
+    if (r) localStorage.setItem(GH_REPO_KEY, r);
+    if (b) localStorage.setItem(GH_BRANCH_KEY, b);
+    setGHStatus('✓ Guardado', 'green');
+    document.getElementById('gh-token-input').value = '';
+}
+
+function clearGitHubToken() {
+    localStorage.removeItem(GH_TOKEN_KEY);
+    setGHStatus('Token eliminado', '#888');
+}
+
+function setGHStatus(msg, color) {
+    const el = document.getElementById('gh-token-status');
+    if (el) { el.textContent = msg; el.style.color = color || '#888'; }
+}
+
+async function testGitHubToken() {
+    const { token, repo } = getGHConfig();
+    if (!token) { setGHStatus('⚠️ No hay token guardado', 'orange'); return; }
+    setGHStatus('⏳ Probando...', '#888');
+    try {
+        const res = await fetch(`https://api.github.com/repos/${repo}`, {
+            headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (res.ok) {
+            setGHStatus('✅ Conexión OK', 'green');
+        } else {
+            const d = await res.json();
+            setGHStatus('❌ Error: ' + (d.message || res.status), 'red');
+        }
+    } catch(e) {
+        setGHStatus('❌ ' + e.message, 'red');
+    }
+}
+
+async function ghGetFileSHA(path) {
+    const { token, repo, branch } = getGHConfig();
+    try {
+        const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
+            headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (res.ok) { const d = await res.json(); return d.sha; }
+    } catch(_) {}
+    return null;
+}
+
+async function ghDeleteFile(path, message) {
+    const { token, repo, branch } = getGHConfig();
+    if (!token) return; // no token — silently skip
+    const sha = await ghGetFileSHA(path);
+    if (!sha) return; // file already gone
+    const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': 'token ' + token,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message, sha, branch })
+    });
+    if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.message || res.status);
+    }
+}
+
+async function ghPutFile(path, content, message) {
+    const { token, repo, branch } = getGHConfig();
+    const sha = await ghGetFileSHA(path);
+    const body = { message, content: btoa(unescape(encodeURIComponent(content))), branch };
+    if (sha) body.sha = sha;
+    const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': 'token ' + token,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.message || res.status);
+    }
+    return res.json();
+}
+
+// ── Push full site-content.json to GitHub so ALL visitors see changes ──
+async function pushSiteContentToGitHub() {
+    const { token } = getGHConfig();
+    if (!token) return; // no token, localStorage-only — silently skip
+    try {
+        const json = JSON.stringify(siteContent, null, 2);
+        await ghPutFile('site-content.json', json, 'cms: update site content');
+    } catch(e) {
+        console.warn('site-content.json push failed:', e.message);
+    }
+}
+
+function buildSitemapXml() {
+    const BASE  = 'https://umana-salud-mental.github.io';
+    const today = new Date().toISOString().split('T')[0];
+    const staticPosts = posts.filter(p => p.status === 'published' && p.staticUrl);
+    const staticUrls = staticPosts.map(p => {
+        const lm = (p.updatedAt || p.createdAt || today).split('T')[0];
+        return `
+  <!-- ${(p.title || 'Post').replace(/--/g,'—')} -->
+  <url>
+    <loc>${BASE}${p.staticUrl}</loc>
+    <lastmod>${lm}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419"    href="${BASE}${p.staticUrl}"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="${BASE}${p.staticUrl}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${p.staticUrl}"/>
+  </url>`;
+    }).join('\n');
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>${BASE}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="${BASE}/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="${BASE}/"/>
+  </url>
+  <url>
+    <loc>${BASE}/recursos.html</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="${BASE}/recursos.html"/>
+    <xhtml:link rel="alternate" hreflang="en"     href="${BASE}/recursos.html"/>
+  </url>
+  <url>
+    <loc>${BASE}/ayuda-crisis.html</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="${BASE}/ayuda-crisis.html"/>
+    <xhtml:link rel="alternate" hreflang="en"     href="${BASE}/ayuda-crisis.html"/>
+  </url>
+${staticUrls}
+</urlset>`;
+}
+
+async function autoPublishPost(id) {
+    const { token } = getGHConfig();
+    if (!token) {
+        // No token: show a hint in the post list instead of blocking
+        const flash = document.getElementById('editor-flash');
+        if (flash) {
+            flash.textContent = '📝 Guardado. Configura el Token de GitHub en Configuración para publicar en la web.';
+            flash.style.display = 'inline';
+            setTimeout(() => { flash.style.display = 'none'; flash.textContent = '✓ Guardado'; }, 6000);
+        }
+        return;
+    }
+
+    const p = posts.find(x => x.id === id);
+    if (!p) return;
+
+    // Show publishing indicator in the editor
+    const saveBtn = document.querySelector('#editor-overlay .btn-primary');
+    const origText = saveBtn ? saveBtn.textContent : '';
+    if (saveBtn) { saveBtn.textContent = '⏳ Publicando en GitHub...'; saveBtn.disabled = true; }
+
+    try {
+        const fname   = `post-${p.id}.html`;
+        const path    = `posts/${fname}`;
+        const htmlContent = buildStaticPostHtml(p);
+
+        // 1. Commit static post file
+        await ghPutFile(path, htmlContent, `blog: publish "${p.title}"`);
+
+        // 2. Store staticUrl on post
+        const idx = posts.findIndex(x => x.id === id);
+        if (idx !== -1) { posts[idx].staticUrl = '/posts/' + fname; savePosts(); }
+
+        // 3. Update sitemap.xml
+        await ghPutFile('sitemap.xml', buildSitemapXml(), `seo: update sitemap for "${p.title}"`);
+
+        if (saveBtn) { saveBtn.textContent = '✅ Publicado en GitHub!'; }
+        setTimeout(() => {
+            if (saveBtn) { saveBtn.textContent = origText; saveBtn.disabled = false; }
+            const BASE = 'https://umana-salud-mental.github.io';
+            const url  = `${BASE}/posts/${fname}`;
+            if (confirm(`✅ Artículo publicado en GitHub!\n\nURL pública (disponible en ~30 seg):\n${url}\n\n¿Abrir en nueva pestaña?`)) {
+                window.open(url, '_blank', 'noopener');
+            }
+        }, 800);
+
+        renderPostList();
+    } catch(e) {
+        if (saveBtn) { saveBtn.textContent = origText; saveBtn.disabled = false; }
+        alert('❌ Error al publicar en GitHub:\n' + e.message + '\n\nRevisa el token en Configuración → GitHub Token.');
+    }
+}
+
+async function publishSitemapToGitHub() {
+    const { token } = getGHConfig();
+    if (!token) { alert('⚠️ Configura primero el GitHub Token en Configuración.'); return; }
+    try {
+        await ghPutFile('sitemap.xml', buildSitemapXml(), 'seo: update sitemap');
+        alert('✅ sitemap.xml actualizado en GitHub.');
+    } catch(e) {
+        alert('❌ Error: ' + e.message);
+    }
+}
+
+// ── SEO: Generate static HTML page for a published post ──────────
+function toSlug(str) {
+    return (str || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+}
+
+function loadGitHubTokenForm() {
+    const cfg = getGHConfig();
+    const ri = document.getElementById('gh-repo-input');
+    const bi = document.getElementById('gh-branch-input');
+    if (ri) ri.value = cfg.repo;
+    if (bi) bi.value = cfg.branch;
+    const hasToken = !!cfg.token;
+    setGHStatus(hasToken ? '✅ Token guardado' : '⚠️ Sin token — publicación automática desactivada', hasToken ? 'green' : 'orange');
+}
+
+// ── Build static HTML for a post (used by both auto-publish and manual export) ──
+function buildStaticPostHtml(p) {
+    const BASE    = 'https://umana-salud-mental.github.io';
+    const fname   = `post-${p.id}.html`;
+    const canon   = `${BASE}/posts/${fname}`;
+    const catMap  = { ansiedad:'Ansiedad', depresion:'Depresión', relaciones:'Relaciones', estres:'Estrés', autocuidado:'Autocuidado', familia:'Familia', general:'General' };
+    const catIco  = { ansiedad:'😰', depresion:'😔', relaciones:'💬', estres:'🌿', autocuidado:'🧘', familia:'🏡', general:'📝' };
+    const cat     = catMap[p.category] || 'General';
+    const icon    = catIco[p.category] || '📝';
+    const exc     = (p.excerpt || '').slice(0, 160);
+    const img     = p.image || `${BASE}/assets/images/og-umana.png`;
+    const dpub    = p.createdAt  || new Date().toISOString();
+    const dmod    = p.updatedAt  || dpub;
+    const kw      = `${p.title}, salud mental, ${cat.toLowerCase()}, terapia online Ecuador, bienestar emocional, mental health, online therapy, salud mental latinoamérica`;
+    const words   = (p.content || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length;
+    const mins    = Math.max(1, Math.round(words / 200));
+    const dateStr = new Date(dpub).toLocaleDateString('es-EC', { year:'numeric', month:'long', day:'numeric' });
+    const cover   = p.image
+        ? `<img src="${p.image.replace(/"/g,'&quot;')}" alt="${p.title.replace(/"/g,'&quot;')}" class="post-cover" loading="eager">`
+        : `<div class="post-cover-placeholder">${icon}</div>`;
+    const ld = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+            { '@type':'BreadcrumbList', 'itemListElement': [
+                { '@type':'ListItem', 'position':1, 'name':'Inicio',   'item': BASE + '/' },
+                { '@type':'ListItem', 'position':2, 'name':'Recursos', 'item': BASE + '/recursos.html' },
+                { '@type':'ListItem', 'position':3, 'name': p.title,   'item': canon }
+            ]},
+            { '@type':'Article', '@id': canon,
+              'headline': p.title, 'description': exc,
+              'articleBody': (p.content || '').replace(/<[^>]*>/g, ' ').slice(0, 3000),
+              'datePublished': dpub, 'dateModified': dmod,
+              'author':    { '@type':'Organization', 'name':'Umana Salud Mental', 'url': BASE + '/' },
+              'publisher': { '@type':'Organization', 'name':'Umana Salud Mental', 'url': BASE + '/',
+                             'logo':{ '@type':'ImageObject', 'url': BASE + '/assets/images/logo.png', 'width':200, 'height':60 } },
+              'image': { '@type':'ImageObject', 'url': img, 'width':1200, 'height':630 },
+              'url': canon, 'mainEntityOfPage': canon, 'inLanguage':'es-419',
+              'articleSection': cat, 'keywords': kw,
+              'isPartOf': { '@type':'CollectionPage', 'url': BASE + '/recursos.html' }
+            }
+        ]
+    }, null, 2);
+    return `<!DOCTYPE html>
+<html lang="es-419" prefix="og: https://ogp.me/ns#">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${p.title.replace(/</g,'&lt;')} | Umana Salud Mental</title>
+<meta name="description" content="${exc.replace(/"/g,'&quot;')}">
+<meta name="keywords" content="${kw.replace(/"/g,'&quot;')}">
+<meta name="author" content="Umana Salud Mental">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="canonical" href="${canon}">
+<link rel="alternate" hreflang="es-419"    href="${canon}">
+<link rel="alternate" hreflang="en"        href="${canon}">
+<link rel="alternate" hreflang="x-default" href="${canon}">
+<meta property="og:type"        content="article">
+<meta property="og:url"         content="${canon}">
+<meta property="og:title"       content="${p.title.replace(/"/g,'&quot;')} | Umana Salud Mental">
+<meta property="og:description" content="${exc.replace(/"/g,'&quot;')}">
+<meta property="og:image"       content="${img}">
+<meta property="og:image:width"  content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name"   content="Umana Salud Mental">
+<meta property="og:locale"      content="es_EC">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="article:published_time" content="${dpub}">
+<meta property="article:modified_time"  content="${dmod}">
+<meta property="article:section" content="${cat}">
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:site"        content="@umanaterapia">
+<meta name="twitter:title"       content="${p.title.replace(/"/g,'&quot;')}">
+<meta name="twitter:description" content="${exc.replace(/"/g,'&quot;')}">
+<meta name="twitter:image"       content="${img}">
+<script type="application/ld+json">${ld}<\/script>
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
+<link rel="stylesheet" href="/styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+.post-wrapper{max-width:780px;margin:0 auto;padding:2rem 1.25rem 4rem}
+.post-back{display:inline-flex;align-items:center;gap:.4rem;color:var(--green,#5D8064);font-size:.9rem;font-weight:600;text-decoration:none;margin-bottom:1.75rem}
+.post-back:hover{text-decoration:underline}
+.post-cat{display:inline-block;background:var(--light-sage,#B7C6AD);color:var(--green,#5D8064);font-size:.78rem;font-weight:700;padding:.25rem .75rem;border-radius:20px;margin-bottom:.85rem}
+.post-title{font-size:clamp(1.6rem,4vw,2.4rem);font-family:var(--font-display,serif);line-height:1.25;margin:0 0 .75rem}
+.post-meta{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;color:#888;font-size:.83rem;margin-bottom:1.5rem}
+.post-cover{width:100%;max-height:420px;object-fit:cover;border-radius:12px;margin-bottom:2rem}
+.post-cover-placeholder{width:100%;height:280px;background:linear-gradient(135deg,#B7C6AD 0%,#F5EFE6 100%);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:2rem}
+.post-body{font-size:1.05rem;line-height:1.8;color:#2F2F2F}
+.post-body h2,.post-body h3{margin-top:2rem;margin-bottom:.6rem;font-family:var(--font-display,serif)}
+.post-body p{margin-bottom:1.2rem}
+.post-body ul,.post-body ol{padding-left:1.5rem;margin-bottom:1.2rem}
+.post-body li{margin-bottom:.4rem}
+.post-body blockquote{border-left:4px solid #5D8064;margin:1.5rem 0;padding:.75rem 1.25rem;background:#F5EFE6;border-radius:0 8px 8px 0;color:#555;font-style:italic}
+.post-cta-bar{margin-top:3rem;padding:1.5rem;background:#F5EFE6;border-radius:12px;text-align:center}
+.post-cta-bar p{margin:0 0 .85rem;color:#555}
+</style>
+</head>
+<body>
+<header><nav><div class="container">
+  <div class="logo"><a href="/"><img src="/assets/images/logo.png?v=2" alt="Umana" class="logo-img" width="120" height="40"></a></div>
+  <div class="nav-end">
+    <ul class="nav-menu">
+      <li><a href="/">Inicio</a></li>
+      <li><a href="/#quienes-somos">Quiénes Somos</a></li>
+      <li><a href="/#servicios">Servicios</a></li>
+      <li><a href="/recursos.html">Recursos</a></li>
+      <li><a href="/#contacto">Contacto</a></li>
+    </ul>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</div></nav></header>
+<main><div class="container"><div class="post-wrapper">
+  <a href="/recursos.html" class="post-back">← Volver a Recursos</a>
+  <span class="post-cat">${cat}</span>
+  <h1 class="post-title">${p.title.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</h1>
+  <div class="post-meta">
+    <span>📅 ${dateStr}</span>
+    <span>⏱ ${mins} min lectura</span>
+  </div>
+  ${cover}
+  <div class="post-body">${p.content || '<p>Sin contenido.</p>'}</div>
+  <div class="post-cta-bar">
+    <p>¿Te gustaría hablar con un profesional sobre este tema?</p>
+    <a href="/#contacto" class="btn btn-primary">Agenda una sesión →</a>
+  </div>
+</div></div></main>
+<footer><div class="container">
+  <div class="footer-content">
+    <div class="footer-info">
+      <p>© 2026 Umana - Plataforma de Salud Mental. Todos los derechos reservados.</p>
+      <p class="privacy">Tu información es confidencial y está protegida.</p>
+    </div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 Umana - Plataforma de Salud Mental. Todos los derechos reservados.</p></div>
+</div></footer>
+<script>
+var nt=document.getElementById('nav-toggle'),nm=document.querySelector('.nav-menu');
+if(nt&&nm)nt.addEventListener('click',function(){var o=nm.classList.toggle('open');nt.setAttribute('aria-expanded',o);});
+<\/script>
+</body></html>`;
+}
+
+// ── Manual export (offline fallback) ─────────────────────────────
+function generateStaticPost(id) {
+    const p = posts.find(x => x.id === id);
+    if (!p) { alert('Artículo no encontrado.'); return; }
+    const fname = `post-${p.id}.html`;
+    const html  = buildStaticPostHtml(p);
+    const idx   = posts.findIndex(x => x.id === id);
+    if (idx !== -1) { posts[idx].staticUrl = '/posts/' + fname; savePosts(); }
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const dlUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = dlUrl; a.download = fname;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(dlUrl);
+    alert(`✅ "${fname}" descargado.\n\nSi tienes el Token de GitHub configurado en Configuración, este paso no es necesario — el artículo ya se publica solo al guardar con estado "Publicado".`);
+}
+
+// ── Offline sitemap download ──────────────────────────────────────
+function generateSitemap() {
+    const xml   = buildSitemapXml();
+    const blob  = new Blob([xml], { type: 'application/xml;charset=utf-8' });
+    const dlUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = dlUrl; a.download = 'sitemap.xml';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(dlUrl);
+    const n = posts.filter(p => p.status === 'published' && p.staticUrl).length;
+    alert(`✅ sitemap.xml descargado! Incluye ${n} artículo(s).\n\nCon el Token de GitHub configurado usa "Publicar Sitemap en GitHub" en Configuración para subir automáticamente.`);
+}
+
+function bootApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    posts = loadPosts();
+    siteContent = loadContent();
+    initQuill();
+    refreshDashboard();
+}
+
+if (isLogged()) bootApp();
+</script>
+</body>
+</html>
